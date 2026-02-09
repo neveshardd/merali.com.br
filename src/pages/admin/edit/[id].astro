@@ -156,13 +156,15 @@ if (Astro.request.method === "POST") {
 ---
 
 <AdminLayout title={`Editar: ${project.title}`}>
-    <div class="admin-main admin-container">
-        <div class="page-header">
-            <h1 class="page-title">Editar Projeto</h1>
-            <a href="/admin" class="btn btn-secondary">Cancelar</a>
+    <div class="page-header-flex">
+        <div>
+            <h1 class="page-title-large">Editar Projeto</h1>
+            <p class="page-subtitle">Faça alterações no projeto {project.title}.</p>
         </div>
+        <a href="/admin" class="btn btn-secondary">Cancelar</a>
+    </div>
 
-        <div class="card">
+    <div class="card fade-in">
             <form method="POST" enctype="multipart/form-data" id="editForm">
                 <div class="form-row">
                     <div class="form-group" style="flex: 2;">
@@ -281,7 +283,7 @@ if (Astro.request.method === "POST") {
                 </div>
             </form>
         </div>
-    </div>
+
     
     <!-- Media Picker Modal -->
     <MediaPicker />
@@ -436,66 +438,4 @@ if (Astro.request.method === "POST") {
     }
 </style>
 
-<style>
-    /* Reuse Admin Styles */
-    .admin-wrapper {
-        font-family: Arial, sans-serif;
-        background: #fff;
-        color: #333;
-        min-height: 100vh;
-    }
-
-    .admin-header {
-        background: #eee;
-        padding: 1rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .admin-content {
-        padding: 2rem;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .create-form {
-        display: grid;
-        gap: 1.5rem;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-    label {
-        font-weight: bold;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-    }
-
-    input, select, textarea {
-        padding: 0.8rem;
-        border: 1px solid #ccc;
-        font-size: 1rem;
-        font-family: inherit;
-    }
-
-    .btn-save {
-        background: black;
-        color: white;
-        border: none;
-        padding: 1rem;
-        font-size: 1rem;
-        font-weight: bold;
-        cursor: pointer;
-        text-transform: uppercase;
-        margin-top: 1rem;
-    }
-
-    .btn-save:hover {
-        background: #333;
-    }
 </style>

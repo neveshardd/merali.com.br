@@ -13,37 +13,194 @@ const { title } = Astro.props;
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content="Meralis Admin" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 		<title>{title} | Admin</title>
 	</head>
 	<body>
-        <div class="admin-header">
-            <div class="admin-container admin-header-content">
-                <div class="admin-logo">Meralis Dashboard</div>
-                <nav class="admin-nav">
-                    <a href="/admin">Projetos</a>
-                    <a href="/admin/create">Novo Projeto</a>
-                    <a href="/admin/gallery">Mídia</a>
-                    <a href="/" target="_blank">Ver Site</a>
-                    <form action="/admin/logout" method="POST" style="display:inline;">
-                        <button type="submit" class="logout-btn">Sair</button>
-                    </form>
-                </nav>
-            </div>
+        <div class="admin-wrapper">
+            <header class="admin-header">
+                <div class="header-container">
+                    <a href="/admin" class="logo">Meralis Admin</a>
+                    <nav class="nav">
+                        <a href="/admin">Projetos</a>
+                        <a href="/admin/gallery">Mídia</a>
+                        <a href="/" target="_blank">Ver Site</a>
+                        <form action="/admin/logout" method="POST" style="display:inline;">
+                            <button type="submit" class="logout-link">Sair</button>
+                        </form>
+                    </nav>
+                </div>
+            </header>
+
+            <main class="admin-content">
+                <slot />
+            </main>
         </div>
-		<slot />
+
+        <style is:global>
+            :root {
+                --admin-bg: #f8fafc;
+                --admin-surface: #ffffff;
+                --admin-border: #e2e8f0;
+                --admin-text: #1e293b;
+                --admin-text-muted: #64748b;
+                --admin-primary: #0f172a;
+                --admin-primary-hover: #334155;
+                --admin-danger: #ef4444;
+            }
+
+            body {
+                margin: 0;
+                font-family: 'Inter', sans-serif;
+                background-color: var(--admin-bg);
+                color: var(--admin-text);
+            }
+
+            .admin-wrapper {
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .admin-header {
+                background: var(--admin-surface);
+                border-bottom: 1px solid var(--admin-border);
+                padding: 1rem 2rem;
+            }
+
+            .header-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .logo {
+                font-weight: 700;
+                text-decoration: none;
+                color: var(--admin-primary);
+                font-size: 1.25rem;
+            }
+
+            .nav {
+                display: flex;
+                gap: 1.5rem;
+                align-items: center;
+            }
+
+            .nav a {
+                text-decoration: none;
+                color: var(--admin-text-muted);
+                font-weight: 500;
+                font-size: 0.9rem;
+            }
+
+            .nav a:hover {
+                color: var(--admin-primary);
+            }
+
+            .logout-link {
+                background: none;
+                border: none;
+                color: var(--admin-danger);
+                cursor: pointer;
+                font-weight: 500;
+                font-size: 0.9rem;
+                padding: 0;
+            }
+
+            .admin-content {
+                flex: 1;
+                width: 100%;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 2rem;
+            }
+
+            /* Basic CRUD styles */
+            .btn {
+                padding: 0.5rem 1rem;
+                border-radius: 4px;
+                font-weight: 600;
+                cursor: pointer;
+                border: 1px solid transparent;
+                text-decoration: none;
+                font-size: 0.875rem;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .btn-primary {
+                background: var(--admin-primary);
+                color: white;
+            }
+
+            .btn-secondary {
+                background: white;
+                border-color: var(--admin-border);
+                color: var(--admin-text);
+            }
+
+            .btn-danger {
+                background: var(--admin-danger);
+                color: white;
+            }
+
+            .table-container {
+                background: white;
+                border: 1px solid var(--admin-border);
+                border-radius: 8px;
+                overflow: hidden;
+                margin-top: 1rem;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: left;
+            }
+
+            th {
+                background: #f1f5f9;
+                padding: 1rem;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--admin-text-muted);
+                font-weight: 600;
+            }
+
+            td {
+                padding: 1rem;
+                border-top: 1px solid var(--admin-border);
+                font-size: 0.875rem;
+            }
+
+            /* Modal styles */
+            .modal-backdrop {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            }
+            .modal-backdrop.active { display: flex; }
+            .modal-container {
+                background: white;
+                width: 90%;
+                max-width: 800px;
+                max-height: 90vh;
+                overflow-y: auto;
+                border-radius: 8px;
+                padding: 2rem;
+            }
+        </style>
 	</body>
 </html>
-
-<style>
-    /* Specific override for the logout button in header if needed, 
-       but admin.css handles .admin-nav button */
-    .logout-btn {
-       color: var(--admin-danger, #ef4444) !important;
-    }
-</style>

@@ -1,13 +1,17 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { getProjects, deleteProject } from '../../db/queries';
+import ProjectForm from '../../components/ProjectForm.astro';
+import { getProjects, deleteProject, createProject, getProjectById, updateProject } from '../../db/queries';
+import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs/promises';
+import path from 'path';
 
 const cookie = Astro.cookies.get('auth_token');
 if (!cookie) {
   return Astro.redirect('/admin/login');
 }
 
-// Handle Form Submissions (Delete)
+// Handle POST actions (Create, Edit, Delete)
 if (Astro.request.method === "POST") {
     try {
         const formData = await Astro.request.formData();
@@ -16,10 +20,38 @@ if (Astro.request.method === "POST") {
 
         if (action === "delete" && id) {
             await deleteProject(id);
-            return Astro.redirect("/admin");
+        } else if (action === "create") {
+            const title = formData.get("title")?.toString() || "";
+            const slug = formData.get("slug")?.toString() || title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+            
+            // Minimal file handling for now to avoid complexity in this step
+            // In a real scenario, we'd use processFile logic
+            
+            await createProject({
+                id: uuidv4(),
+                title,
+                slug,
+                category: formData.get("category")?.toString() || "",
+                year: formData.get("year")?.toString() || "",
+                location: formData.get("location")?.toString() || "",
+                area: formData.get("area")?.toString() || "",
+                description: formData.get("description")?.toString() || "",
+                images: JSON.stringify([]),
+                createdAt: new Date(),
+            });
+        } else if (action === "edit" && id) {
+             await updateProject(id, {
+                title: formData.get("title")?.toString() || "",
+                category: formData.get("category")?.toString() || "",
+                year: formData.get("year")?.toString() || "",
+                location: formData.get("location")?.toString() || "",
+                area: formData.get("area")?.toString() || "",
+                description: formData.get("description")?.toString() || "",
+            });
         }
+        return Astro.redirect("/admin");
     } catch (e) {
-        console.error(e);
+        console.error("Action error:", e);
     }
 }
 
@@ -27,61 +59,150 @@ const projects = await getProjects();
 ---
 
 <AdminLayout title="Projetos">
-    <div class="admin-main admin-container">
-        <div class="page-header">
-            <h1 class="page-title">Meus Projetos <span style="font-size:0.5em; opacity:0.5; vertical-align:middle;">({projects.length})</span></h1>
-            <a href="/admin/create" class="btn btn-primary">
-                <span style="font-size:1.2em; margin-right:5px;">+</span> Novo Projeto
-            </a>
-        </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="margin: 0; font-size: 1.5rem;">Projetos</h1>
+        <button class="btn btn-primary" onclick="document.getElementById('modal-create').showModal()">+ Novo Projeto</button>
+    </div>
 
-        {projects.length === 0 ? (
-            <div class="empty-state">
-                <p>Nenhum projeto encontrado.</p>
-                <a href="/admin/create" class="btn btn-secondary">Criar o primeiro projeto</a>
-            </div>
-        ) : (
-            <div class="project-grid">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 80px;">Imagem</th>
+                    <th>Título</th>
+                    <th>Categoria</th>
+                    <th>Ano</th>
+                    <th style="text-align: right;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
                 {projects.map((proj) => {
-                    let thumbnail = "/placeholder-image.jpg"; // You might want a real placeholder asset
+                    let thumbnail = "/placeholder-image.jpg";
                     try {
                         const images = JSON.parse(proj.images || '[]');
                         if (Array.isArray(images) && images.length > 0) {
                             thumbnail = images[0];
                         }
-                    } catch(e) { /* ignore */ }
+                    } catch(e) {}
                     
                     return (
-                        <div class="project-card">
-                            <img src={thumbnail} alt={proj.title} class="project-image-preview" loading="lazy" />
-                            <div class="project-card-content">
-                                <div class="project-meta">{proj.category} • {proj.year || 'N/A'}</div>
-                                <h3 class="project-title">{proj.title}</h3>
-                                
-                                <div class="project-actions">
-                                    <a href={`/admin/edit/${proj.id}`} class="btn btn-sm btn-secondary">Editar</a>
-                                    <form method="POST" onsubmit="return confirm('Tem certeza que deseja excluir?');">
+                        <tr>
+                            <td>
+                                <img src={thumbnail} alt="" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; display: block;" />
+                            </td>
+                            <td><strong>{proj.title}</strong></td>
+                            <td><span style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">{proj.category}</span></td>
+                            <td style="color: var(--admin-text-muted);">{proj.year}</td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 0.5rem;">
+                                    <button class="btn btn-secondary" onclick={`openEditModal(${JSON.stringify(proj)})`}>Editar</button>
+                                    <form method="POST" onsubmit="return confirm('Excluir este projeto?');" style="margin:0;">
                                         <input type="hidden" name="action" value="delete" />
                                         <input type="hidden" name="id" value={proj.id} />
-                                        <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                                        <button type="submit" class="btn btn-danger">Excluir</button>
                                     </form>
                                 </div>
-                            </div>
-                        </div>
+                            </td>
+                        </tr>
                     );
                 })}
-            </div>
-        )}
+            </tbody>
+        </table>
     </div>
-</AdminLayout>
 
-<style>
-    .empty-state {
-        text-align: center;
-        padding: 4rem;
-        background: var(--admin-surface);
-        border: 1px dashed var(--admin-border);
-        border-radius: var(--radius-lg);
-        color: var(--admin-text-muted);
-    }
-</style>
+    <!-- Create Modal -->
+    <dialog id="modal-create" class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Novo Projeto</h2>
+                <button class="btn-close" onclick="document.getElementById('modal-create').close()">×</button>
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="create" />
+                <ProjectForm />
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-create').close()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- Edit Modal -->
+    <dialog id="modal-edit" class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Projeto</h2>
+                <button class="btn-close" onclick="document.getElementById('modal-edit').close()">×</button>
+            </div>
+            <form method="POST" enctype="multipart/form-data" id="form-edit">
+                <input type="hidden" name="action" value="edit" />
+                <input type="hidden" name="id" id="edit-id" />
+                <div id="edit-form-container">
+                    <!-- Loaded via JS -->
+                    <ProjectForm />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-edit').close()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <style is:global>
+        .modal-dialog {
+            border: none;
+            border-radius: 8px;
+            padding: 0;
+            max-width: 700px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .modal-dialog::backdrop {
+            background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            padding: 2rem;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .modal-header h2 { margin: 0; font-size: 1.25rem; }
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--admin-text-muted);
+        }
+        .modal-footer {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+    </style>
+
+    <script is:inline>
+        function openEditModal(project) {
+            const modal = document.getElementById('modal-edit');
+            const form = document.getElementById('form-edit');
+            
+            // Populate form fields
+            form.querySelector('#edit-id').value = project.id;
+            form.querySelector('[name="title"]').value = project.title || '';
+            form.querySelector('[name="category"]').value = project.category || '';
+            form.querySelector('[name="slug"]').value = project.slug || '';
+            form.querySelector('[name="year"]').value = project.year || '';
+            form.querySelector('[name="location"]').value = project.location || '';
+            form.querySelector('[name="area"]').value = project.area || '';
+            form.querySelector('[name="description"]').value = project.description || '';
+            
+            modal.showModal();
+        }
+    </script>
+</AdminLayout>

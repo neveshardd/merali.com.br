@@ -124,13 +124,15 @@ if (Astro.request.method === "POST") {
 ---
 
 <AdminLayout title="Criar Novo Projeto">
-    <div class="admin-main admin-container">
-        <div class="page-header">
-            <h1 class="page-title">Criar Novo Projeto</h1>
-            <a href="/admin" class="btn btn-secondary">Cancelar</a>
+    <div class="page-header-flex">
+        <div>
+            <h1 class="page-title-large">Criar Novo Projeto</h1>
+            <p class="page-subtitle">Preencha os dados abaixo para adicionar ao portfólio.</p>
         </div>
+        <a href="/admin" class="btn btn-secondary">Cancelar</a>
+    </div>
 
-        <div class="card">
+    <div class="card fade-in">
             <form method="POST" enctype="multipart/form-data">
                 <div class="form-row">
                     <div class="form-group" style="flex: 2;">
@@ -227,7 +229,7 @@ if (Astro.request.method === "POST") {
                 </div>
             </form>
         </div>
-    </div>
+
     
     <!-- Media Picker Modal -->
     <MediaPicker />
