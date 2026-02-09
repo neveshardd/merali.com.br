@@ -7,11 +7,12 @@ import { initDb } from '../db';
 
 // Initialize DB and Seed if necessary
 // In a real production app, this would be a separate migration step
+// No-op: initDb is handled centrally and guarded for production
+/*
 try {
     initDb();
-} catch (e) {
-    // console.error("DB Init Error (might be already init):", e);
-}
+} catch (e) {}
+*/
 
 const dbProjects = await getProjects();
 

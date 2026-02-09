@@ -43,8 +43,8 @@ if (Astro.request.method === "POST") {
         // Successful login - clear attempts
         loginAttemptsMap.delete(clientIP);
         
-        // Generate a more secure session token
-        const sessionToken = crypto.randomUUID();
+        // Generate a simple secure-ish token without relying on crypto.randomUUID
+        const sessionToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
         
         Astro.cookies.set("auth_token", sessionToken, { 
           path: "/",

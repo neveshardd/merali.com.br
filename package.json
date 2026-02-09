@@ -16,7 +16,6 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/uuid": "^10.0.0",
     "astro": "^5.17.1",
-    "better-sqlite3": "^12.6.2",
     "dotenv": "^17.2.4",
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.1",
