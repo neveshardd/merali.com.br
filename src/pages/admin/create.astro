@@ -194,8 +194,8 @@ if (Astro.request.method === "POST") {
                         </div>
                     </div>
                     <div style="margin-top: 0.5rem; text-align: center;">
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="handleCoverUploadClick(event)">
-                            📤 Enviar do PC
+                        <button type="button" class="btn btn-sm btn-secondary" id="btn-upload-cover">
+                            Enviar do PC
                         </button>
                     </div>
                 </div>
@@ -213,8 +213,8 @@ if (Astro.request.method === "POST") {
                         </div>
                     </div>
                     <div style="margin-top: 0.5rem; text-align: center;">
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="handleGalleryUploadClick(event)">
-                            📤 Enviar do PC
+                        <button type="button" class="btn btn-sm btn-secondary" id="btn-upload-gallery">
+                            Enviar do PC
                         </button>
                     </div>
                     <div class="preview-container" id="gallery-preview-container">
@@ -298,6 +298,20 @@ if (Astro.request.method === "POST") {
         e.stopPropagation();
         document.getElementById('gallery_images').click();
     }
+    
+    // Attach event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnCover = document.getElementById('btn-upload-cover');
+        const btnGallery = document.getElementById('btn-upload-gallery');
+        
+        if (btnCover) {
+            btnCover.addEventListener('click', handleCoverUploadClick);
+        }
+        
+        if (btnGallery) {
+            btnGallery.addEventListener('click', handleGalleryUploadClick);
+        }
+    });
 </script>
 
 <style>
