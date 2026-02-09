@@ -1,0 +1,321 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import MediaPicker from '../../components/MediaPicker.astro';
+import { createProject } from '../../db/queries';
+import { v4 as uuidv4 } from 'uuid';
+// sharp import removed to allow dynamic loading
+import fs from 'fs/promises';
+import path from 'path';
+
+const cookie = Astro.cookies.get('auth_token');
+if (!cookie) {
+  return Astro.redirect('/admin/login');
+}
+
+if (Astro.request.method === "POST") {
+    try {
+        const formData = await Astro.request.formData();
+        const title = formData.get("title")?.toString() || "";
+        const slug = formData.get("slug")?.toString() || title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+        const category = formData.get("category")?.toString() || "";
+        const year = formData.get("year")?.toString() || "";
+        const location = formData.get("location")?.toString() || "";
+        const area = formData.get("area")?.toString() || "";
+        const description = formData.get("description")?.toString() || "";
+        
+        // Check if images were selected from library
+        const coverLibrary = formData.get("cover_image_library")?.toString();
+        const galleryLibrary = formData.get("gallery_images_library")?.toString();
+        
+        // Handle File Uploads
+        const coverFile = formData.get('cover_image') as File;
+        const galleryFiles = formData.getAll('gallery_images') as File[];
+        
+        const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+        try {
+            await fs.access(uploadDir);
+        } catch {
+            await fs.mkdir(uploadDir, { recursive: true });
+        }
+
+        // Helper to process and save file
+        const processFile = async (file: File) => {
+             if (file.size > 0 && file.type.startsWith('image/')) {
+                const buffer = Buffer.from(await file.arrayBuffer());
+                const filename = `${uuidv4()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+                const filepath = path.join(uploadDir, filename);
+                
+                try {
+                    const sharp = (await import('sharp')).default;
+                    await sharp(buffer)
+                        .resize(1920, 1080, { fit: 'inside', withoutEnlargement: true })
+                        .jpeg({ quality: 80 })
+                        .toFile(filepath);
+                } catch (err) {
+                    console.warn("Sharp optimization failed (or not found), saving raw file:", err);
+                    await fs.writeFile(filepath, buffer);
+                }
+
+                return `/uploads/${filename}`;
+            }
+            return null;
+        }
+
+        // 1. Process Cover Image (First in array)
+        let coverUrl = null;
+        
+        // Check if cover was selected from library
+        if (coverLibrary) {
+            try {
+                const libraryUrls = JSON.parse(coverLibrary);
+                if (Array.isArray(libraryUrls) && libraryUrls.length > 0) {
+                    coverUrl = libraryUrls[0];
+                }
+            } catch {}
+        }
+        
+        // If no library selection, process uploaded file
+        if (!coverUrl && coverFile) {
+            coverUrl = await processFile(coverFile);
+        }
+        
+        const imageUrls: string[] = [];
+        if (coverUrl) imageUrls.push(coverUrl);
+
+        // 2. Process Gallery Images
+        let galleryUrls: string[] = [];
+        
+        // Check if gallery was selected from library
+        if (galleryLibrary) {
+            try {
+                const libraryGallery = JSON.parse(galleryLibrary);
+                if (Array.isArray(libraryGallery)) {
+                    galleryUrls = libraryGallery;
+                }
+            } catch {}
+        }
+        
+        // Add uploaded gallery files
+        for (const file of galleryFiles) {
+            const url = await processFile(file);
+            if (url) galleryUrls.push(url);
+        }
+        
+        imageUrls.push(...galleryUrls);
+
+        await createProject({
+            id: uuidv4(),
+            title,
+            slug,
+            category,
+            year,
+            location,
+            area,
+            description,
+            images: JSON.stringify(imageUrls),
+            createdAt: new Date(),
+        });
+
+        return Astro.redirect("/admin");
+    } catch (e) {
+        console.error("Error creating project:", e);
+    }
+}
+---
+
+<AdminLayout title="Criar Novo Projeto">
+    <div class="admin-main admin-container">
+        <div class="page-header">
+            <h1 class="page-title">Criar Novo Projeto</h1>
+            <a href="/admin" class="btn btn-secondary">Cancelar</a>
+        </div>
+
+        <div class="card">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <label class="form-label" for="title">Título</label>
+                        <input class="form-input" type="text" id="title" name="title" required placeholder="Ex: Casa do Lago" />
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label" for="category">Categoria</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="Residencial">Residencial</option>
+                            <option value="Comercial">Comercial</option>
+                            <option value="Interiores">Interiores</option>
+                            <option value="Urbanismo">Urbanismo</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="slug">Slug (URL)</label>
+                    <input class="form-input" type="text" id="slug" name="slug" placeholder="Deixe em branco para gerar automaticamente" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="year">Ano</label>
+                        <input class="form-input" type="text" id="year" name="year" placeholder="2024" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="location">Localização</label>
+                        <input class="form-input" type="text" id="location" name="location" placeholder="São Paulo, SP" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="area">Área</label>
+                        <input class="form-input" type="text" id="area" name="area" placeholder="250m²" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="description">Descrição</label>
+                    <textarea class="form-textarea" id="description" name="description" rows="5"></textarea>
+                </div>
+
+                <!-- Cover Image Section -->
+                <div class="form-group">
+                    <label class="upload-label">Imagem de Capa (Obrigatório)</label>
+                    <div class="upload-area" id="cover-upload-area" onclick="openMediaPicker('cover_image', previewCoverFromLibrary, false)">
+                        <input type="file" id="cover_image" name="cover_image" accept="image/*" class="hidden-input" onchange="previewCover(this)" style="display:none;" />
+                        <div class="upload-content">
+                            <div class="upload-icon">📷</div>
+                            <div class="upload-text">
+                                <span class="upload-highlight">Clique para escolher</span> da biblioteca ou enviar nova
+                            </div>
+                        </div>
+                        <div class="cover-preview" id="cover-preview-container">
+                             <img id="cover-preview-img" src="" alt="Capa" />
+                             <div class="change-overlay">Clique para alterar</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.5rem; text-align: center;">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="handleCoverUploadClick(event)">
+                            📤 Enviar do PC
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Gallery Images Section -->
+                <div class="form-group">
+                    <label class="upload-label">Galeria de Imagens</label>
+                    <div class="upload-area" style="min-height: 150px; border-style: dashed;" onclick="openMediaPicker('gallery_images', previewGalleryFromLibrary, true)">
+                        <input type="file" id="gallery_images" name="gallery_images" multiple accept="image/*" class="hidden-input" onchange="previewGallery(this)" style="display:none;" />
+                        <div class="upload-content">
+                            <div class="upload-icon" style="font-size: 2rem;">🖼️</div>
+                            <div class="upload-text">
+                                <span class="upload-highlight">Escolher da biblioteca</span> ou enviar novas
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.5rem; text-align: center;">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="handleGalleryUploadClick(event)">
+                            📤 Enviar do PC
+                        </button>
+                    </div>
+                    <div class="preview-container" id="gallery-preview-container">
+                        <!-- JS will populate here -->
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar Projeto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Media Picker Modal -->
+    <MediaPicker />
+</AdminLayout>
+
+<script is:inline>
+    function previewCover(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('cover-preview-img');
+                const container = document.getElementById('cover-preview-container');
+                img.src = e.target.result;
+                container.classList.add('active');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    function previewCoverFromLibrary(urls) {
+        if (urls && urls.length > 0) {
+            const img = document.getElementById('cover-preview-img');
+            const container = document.getElementById('cover-preview-container');
+            img.src = urls[0];
+            container.classList.add('active');
+        }
+    }
+
+    function previewGallery(input) {
+        const container = document.getElementById('gallery-preview-container');
+        // Clear previous previews if needed, or append? 
+        // For simple implementations, just showing selected files from THIS input is easiest.
+        // Handling accumulation of files from multiple inputs needs a DataTransfer which is complex for basic UI.
+        // Let's replace previews for now to match the file input behavior (replacing selection).
+        container.innerHTML = ''; 
+
+        if (input.files) {
+            Array.from(input.files).forEach((file) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item';
+                    div.innerHTML = `<img src="${e.target.result}" />`;
+                    container.appendChild(div);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+    
+    function previewGalleryFromLibrary(urls) {
+        const container = document.getElementById('gallery-preview-container');
+        // Append to existing previews
+        urls.forEach(url => {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `<img src="${url}" />`;
+            container.appendChild(div);
+        });
+    }
+    
+    function handleCoverUploadClick(e) {
+        e.stopPropagation();
+        document.getElementById('cover_image').click();
+    }
+    
+    function handleGalleryUploadClick(e) {
+        e.stopPropagation();
+        document.getElementById('gallery_images').click();
+    }
+</script>
+
+<style>
+    .form-row {
+        display: flex;
+        gap: 1.5rem;
+    }
+    
+    .form-actions {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    @media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+    }
+</style>

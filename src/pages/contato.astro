@@ -1,0 +1,278 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Contato - Meralis Arquitetura">
+	<Header />
+	<main>
+		<section class="page-header">
+			<div class="container">
+				<h1>FALE CONOSCO</h1>
+				<p>Estamos prontos para transformar sua visão em realidade. Entre em contato para agendar uma reunião.</p>
+			</div>
+		</section>
+
+		<section class="contact-section">
+			<div class="container">
+				<div class="contact-grid">
+					<!-- Contact Info Column -->
+					<div class="info-column">
+						<div class="info-block">
+							<h3>ENDEREÇO</h3>
+							<p>Av. Paulista, 1000 - Conj. 1201<br>Bela Vista, São Paulo - SP<br>CEP 01310-100</p>
+                            <a href="https://maps.google.com" target="_blank" class="map-link">VER NO MAPA &rarr;</a>
+						</div>
+
+						<div class="info-block">
+							<h3>CONTATO DIRETO</h3>
+							<p><a href="mailto:contato@meralis.arq.br">contato@meralis.arq.br</a></p>
+							<p><a href="tel:+5511999999999">+55 11 99999-9999</a></p>
+						</div>
+
+						<div class="info-block">
+							<h3>REDES SOCIAIS</h3>
+							<ul class="social-list">
+								<li><a href="#">INSTAGRAM</a></li>
+								<li><a href="#">LINKEDIN</a></li>
+								<li><a href="#">PINTEREST</a></li>
+								<li><a href="#">BEHANCE</a></li>
+							</ul>
+						</div>
+					</div>
+
+					<!-- Contact Form Column -->
+					<div class="form-column">
+						<form class="contact-form">
+							<div class="form-group">
+								<label for="name">NOME</label>
+								<input type="text" id="name" name="name" required placeholder="Seu nome completo" />
+							</div>
+
+							<div class="form-group">
+								<label for="email">E-MAIL</label>
+								<input type="email" id="email" name="email" required placeholder="seu@email.com" />
+							</div>
+
+							<div class="form-group">
+								<label for="phone">TELEFONE</label>
+								<input type="tel" id="phone" name="phone" placeholder="(11) 99999-9999" />
+							</div>
+
+                            <div class="form-group">
+                                <label for="subject">ASSUNTO</label>
+                                <select id="subject" name="subject">
+                                    <option value="" disabled selected>Selecione o interesse</option>
+                                    <option value="projeto-residencial">Projeto Residencial</option>
+                                    <option value="projeto-comercial">Projeto Comercial</option>
+                                    <option value="interiores">Design de Interiores</option>
+                                    <option value="imprensa">Imprensa / Outros</option>
+                                </select>
+                            </div>
+
+							<div class="form-group">
+								<label for="message">MENSAGEM</label>
+								<textarea id="message" name="message" rows="5" required placeholder="Conte um pouco sobre seu projeto..."></textarea>
+							</div>
+
+							<button type="submit" class="btn-submit">ENVIAR MENSAGEM</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+    <Footer />
+</Layout>
+
+<style>
+	main {
+		background-color: #13151a;
+		min-height: 100vh;
+        padding-top: 150px;
+        padding-bottom: 8rem; 
+        color: white;
+	}
+
+	.container {
+		max-width: 1100px;
+		margin: 0 auto;
+        padding: 0 2rem;
+	}
+
+	.page-header {
+		margin-bottom: 6rem;
+        text-align: center;
+	}
+
+	h1 {
+		font-size: 3rem;
+		font-weight: 700;
+		color: white;
+		margin-bottom: 1rem;
+		letter-spacing: 2px;
+        text-transform: uppercase;
+	}
+
+	p {
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 1.1rem;
+		font-weight: 300;
+        max-width: 600px;
+        margin: 0 auto;
+	}
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr; /* Info takes less space, form takes more */
+        gap: 6rem;
+    }
+
+    /* Info Column Styling */
+    .info-block {
+        margin-bottom: 4rem;
+    }
+
+    .info-block h3 {
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+        text-transform: uppercase;
+    }
+
+    .info-block p, .info-block a {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: white;
+        text-decoration: none;
+        font-weight: 300;
+    }
+
+    .info-block p a {
+         transition: opacity 0.3s ease;
+    }
+    
+    .info-block p a:hover {
+        opacity: 0.7;
+    }
+
+    .map-link {
+        display: inline-block;
+        margin-top: 1rem;
+        font-size: 0.8rem !important;
+        text-decoration: underline !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .social-list {
+        list-style: none;
+    }
+
+    .social-list li {
+        margin-bottom: 0.8rem;
+    }
+
+    .social-list a {
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+        transition: padding-left 0.3s ease;
+        display: inline-block;
+    }
+
+    .social-list a:hover {
+        padding-left: 10px;
+        color: white;
+    }
+
+    /* Form Styling - Minimalist */
+    .contact-form {
+        display: flex;
+        flex-direction: column;
+        gap: 2.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        margin-bottom: 0.8rem;
+        opacity: 0.5;
+        text-transform: uppercase;
+    }
+
+    input, textarea, select {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        padding: 0.8rem 0;
+        font-family: inherit;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+        border-radius: 0; /* Remove rounded corners on mobile */
+    }
+
+    input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-bottom-color: white;
+    }
+
+    /* Custom select styling is tricky, sticking to basic for reliability or using appearance: none with custom arrow if requested */
+    select option {
+        background-color: #13151a;
+        color: white;
+    }
+
+    ::placeholder {
+        color: rgba(255,255,255,0.3);
+    }
+
+    .btn-submit {
+        align-self: flex-start;
+        background-color: white;
+        color: black;
+        border: none;
+        padding: 1rem 3rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        border-radius: 50px;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .btn-submit:hover {
+        background-color: #f0f0f0;
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 900px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+            gap: 4rem;
+        }
+
+        .info-column {
+            order: 2; /* Move info below form on mobile if desired, or keep above. Keeping above is usually better for "quick info" */
+        }
+    }
+
+    @media (max-width: 768px) {
+        main {
+            padding-top: 100px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+    }
+</style>

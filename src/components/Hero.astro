@@ -1,0 +1,147 @@
+---
+---
+
+<section class="hero">
+	<div class="hero-overlay"></div>
+	<div class="container">
+		<div class="content">
+			<div class="main-title-container">
+				<h1>EXPERIÊNCIA ESPACIAL<br />ATRAVÉS DA IMAGEM</h1>
+				<p class="subtitle">Studio de visualização arquitetônica focado em criar narrativas visuais de alto impacto.</p>
+				<a href="/projetos" class="btn-primary">VER PORTFÓLIO &rarr;</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.hero {
+		position: relative;
+		height: 100vh;
+		width: 100%;
+		/* Use hero-render.png from public folder */
+		background-image: url('/hero-render.png'); 
+		background-size: cover;
+		background-position: center;
+		display: flex;
+		align-items: flex-end; /* Align content to bottom */
+		overflow: hidden;
+	}
+
+	.hero-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.6) 100%);
+		z-index: 1;
+	}
+
+	.container {
+		position: relative;
+		z-index: 2;
+		width: 100%;
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 4rem 0; /* Aligned with Projects Gallery (no horizontal padding) */
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		height: 100%;
+	}
+
+    @media (max-width: 1150px) {
+        .container {
+            padding: 4rem 2rem;
+        }
+    }
+
+	.content {
+		width: 100%;
+		color: white;
+		position: relative;
+		opacity: 0; /* keyframe handles opacity */
+		animation: fadeInUp 1s ease-out forwards 0.5s; /* Delay slightly */
+	}
+
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(30px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* Main Title Area */
+	.main-title-container {
+		margin-bottom: 2rem;
+	}
+
+	h1 {
+		font-size: 5rem;
+		font-weight: 800;
+		line-height: 1;
+		text-transform: uppercase;
+		margin-bottom: 1.5rem;
+		text-shadow: 2px 2px 20px rgba(0,0,0,0.5);
+	}
+
+	.subtitle {
+		font-size: 1.5rem;
+		font-weight: 300;
+		margin-bottom: 3rem;
+		max-width: 600px;
+		line-height: 1.4;
+		opacity: 0.9;
+	}
+
+	.btn-primary {
+		display: inline-block;
+		padding: 1rem 2.5rem;
+		background-color: white;
+		color: black;
+		font-weight: 600;
+		border-radius: 50px; /* Pill shape */
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		transition: transform 0.3s ease, background-color 0.3s ease;
+	}
+
+	.btn-primary:hover {
+		transform: translateY(-2px);
+		background-color: #f0f0f0;
+	}
+
+	@media (max-width: 1024px) {
+		h1 {
+			font-size: 3.5rem;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.container {
+			padding: 2rem;
+			justify-content: center; /* Center content on mobile */
+			align-items: center;
+			text-align: center;
+		}
+
+		h1 {
+			font-size: 2.5rem;
+		}
+
+		.subtitle {
+			font-size: 1.1rem;
+		}
+		
+		.main-title-container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+	}
+</style>

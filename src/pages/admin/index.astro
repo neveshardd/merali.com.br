@@ -1,0 +1,87 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getProjects, deleteProject } from '../../db/queries';
+
+const cookie = Astro.cookies.get('auth_token');
+if (!cookie) {
+  return Astro.redirect('/admin/login');
+}
+
+// Handle Form Submissions (Delete)
+if (Astro.request.method === "POST") {
+    try {
+        const formData = await Astro.request.formData();
+        const action = formData.get("action");
+        const id = formData.get("id")?.toString();
+
+        if (action === "delete" && id) {
+            await deleteProject(id);
+            return Astro.redirect("/admin");
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+const projects = await getProjects();
+---
+
+<AdminLayout title="Projetos">
+    <div class="admin-main admin-container">
+        <div class="page-header">
+            <h1 class="page-title">Meus Projetos <span style="font-size:0.5em; opacity:0.5; vertical-align:middle;">({projects.length})</span></h1>
+            <a href="/admin/create" class="btn btn-primary">
+                <span style="font-size:1.2em; margin-right:5px;">+</span> Novo Projeto
+            </a>
+        </div>
+
+        {projects.length === 0 ? (
+            <div class="empty-state">
+                <p>Nenhum projeto encontrado.</p>
+                <a href="/admin/create" class="btn btn-secondary">Criar o primeiro projeto</a>
+            </div>
+        ) : (
+            <div class="project-grid">
+                {projects.map((proj) => {
+                    let thumbnail = "/placeholder-image.jpg"; // You might want a real placeholder asset
+                    try {
+                        const images = JSON.parse(proj.images || '[]');
+                        if (Array.isArray(images) && images.length > 0) {
+                            thumbnail = images[0];
+                        }
+                    } catch(e) { /* ignore */ }
+                    
+                    return (
+                        <div class="project-card">
+                            <img src={thumbnail} alt={proj.title} class="project-image-preview" loading="lazy" />
+                            <div class="project-card-content">
+                                <div class="project-meta">{proj.category} • {proj.year || 'N/A'}</div>
+                                <h3 class="project-title">{proj.title}</h3>
+                                
+                                <div class="project-actions">
+                                    <a href={`/admin/edit/${proj.id}`} class="btn btn-sm btn-secondary">Editar</a>
+                                    <form method="POST" onsubmit="return confirm('Tem certeza que deseja excluir?');">
+                                        <input type="hidden" name="action" value="delete" />
+                                        <input type="hidden" name="id" value={proj.id} />
+                                        <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        )}
+    </div>
+</AdminLayout>
+
+<style>
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: var(--admin-surface);
+        border: 1px dashed var(--admin-border);
+        border-radius: var(--radius-lg);
+        color: var(--admin-text-muted);
+    }
+</style>

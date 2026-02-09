@@ -1,0 +1,207 @@
+---
+import { getProjects } from '../db/queries';
+
+const dbProjects = await getProjects();
+const featuredProjects = dbProjects.slice(0, 5).map((p, index) => {
+    let images: string[] = [];
+    try {
+        images = JSON.parse(p.images || '[]');
+    } catch {
+        images = [p.images || ''];
+    }
+
+    // Simple pattern for grid logic
+    const sizes = ['wide', 'tall', 'normal', 'normal', 'wide'];
+    const positions = ['center', 'left', 'right', 'top', 'bottom'];
+    
+    return {
+        ...p,
+        image: images[0] || '/hero-render.png',
+        size: sizes[index % sizes.length],
+        position: positions[index % positions.length]
+    };
+});
+---
+
+<section id="projetos" class="projects-section">
+	<div class="container">
+		<div class="section-header">
+			<h2 class="section-title">PROJETOS SELECIONADOS</h2>
+			<a href="/projetos" class="view-all">VER TODOS &rarr;</a>
+		</div>
+
+		<div class="gallery">
+            {featuredProjects.length > 0 ? featuredProjects.map((project) => (
+                <a href={`/projetos/${project.slug}`} class={`project-item ${project.size}`}>
+                    <div class="image-wrapper">
+                        <img src={project.image} alt={project.title} style={`object-position: ${project.position};`} />
+                        <div class="overlay"></div>
+                        <span class="project-title">{project.title}</span>
+                    </div>
+                </a>
+            )) : (
+                <div class="empty-gallery">
+                    <p>Portfólio em atualização.</p>
+                </div>
+            )}
+		</div>
+	</div>
+</section>
+
+<style>
+	.projects-section {
+		padding: 8rem 4rem;
+		background-color: #13151a; /* Matching global bg */
+		color: white;
+	}
+
+	.container {
+		max-width: 1100px;
+		margin: 0 auto;
+	}
+
+	.section-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		margin-bottom: 3rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		padding-bottom: 1rem;
+	}
+
+	.section-title {
+		font-size: 1.5rem;
+		font-weight: 300;
+		letter-spacing: 2px;
+		margin: 0;
+	}
+
+	.view-all {
+		font-size: 0.8rem;
+		letter-spacing: 1px;
+		opacity: 0.7;
+		transition: opacity 0.3s ease;
+	}
+
+	.view-all:hover {
+		opacity: 1;
+		text-decoration: underline;
+	}
+
+	/* Masonry/Grid Layout */
+	.gallery {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+		grid-auto-rows: 350px;
+		gap: 1.5rem;
+		grid-auto-flow: dense; /* Helps fill gaps */
+	}
+
+    .empty-gallery {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 200px;
+        border: 1px dashed rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.5);
+        font-weight: 300;
+        letter-spacing: 1px;
+    }
+
+	/* Aspect Ratio Helpers */
+	.project-item.wide {
+		grid-column: span 2;
+	}
+
+	.project-item.tall {
+		grid-row: span 2;
+	}
+
+	.project-item {
+		display: block; /* Link is block */
+		position: relative;
+		overflow: hidden;
+		cursor: pointer;
+		height: 100%;
+		width: 100%;
+	}
+
+	.image-wrapper {
+		width: 100%;
+		height: 100%;
+		position: relative;
+		transition: transform 0.5s ease;
+	}
+
+	.project-item:hover .image-wrapper {
+		transform: scale(1.02);
+	}
+
+	.project-item img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: filter 0.3s ease;
+		filter: grayscale(20%);
+	}
+
+	.project-item:hover img {
+		filter: grayscale(0%);
+	}
+
+	.overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%);
+		opacity: 0.6;
+		transition: opacity 0.3s ease;
+	}
+
+	.project-item:hover .overlay {
+		opacity: 0.8;
+	}
+
+	.project-title {
+		position: absolute;
+		bottom: 1.5rem;
+		right: 1.5rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 1.5px;
+		color: white;
+		text-transform: uppercase;
+		z-index: 2;
+		opacity: 0.9;
+		text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+	}
+
+	/* Responsive Adjustments */
+	@media (max-width: 1024px) {
+		.projects-section {
+			padding: 4rem 2rem;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.gallery {
+			grid-template-columns: 1fr; /* Stack on mobile */
+			grid-auto-rows: 300px;
+		}
+
+		.project-item.wide, 
+		.project-item.tall {
+			grid-column: span 1;
+			grid-row: span 1;
+		}
+
+		.section-header {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 1rem;
+		}
+	}
+</style>

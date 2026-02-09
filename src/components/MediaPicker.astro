@@ -1,0 +1,688 @@
+
+<!-- Media Picker Modal Component -->
+<div id="media-picker-modal" class="media-modal hidden">
+    <div class="media-modal-content">
+        <div class="media-modal-header">
+            <h3>Selecionar Imagem</h3>
+            <button type="button" class="close-modal" onclick="closeMediaPicker()">×</button>
+        </div>
+        
+        <div class="media-tabs">
+            <button type="button" class="tab-btn active" onclick="switchTab('library')">Biblioteca</button>
+            <button type="button" class="tab-btn" onclick="switchTab('upload')">Upload</button>
+        </div>
+
+        <div id="tab-library" class="tab-content active">
+            <div class="library-grid" id="library-grid">
+                <!-- Populated by JS -->
+                <div class="loading-spinner">Carregando...</div>
+            </div>
+        </div>
+
+        <div id="tab-upload" class="tab-content">
+            <div class="upload-dropzone" id="modal-upload-area">
+                <input type="file" id="modal-file-input" accept="image/*" multiple />
+                <div class="upload-message">
+                    <span class="icon">☁️</span>
+                    <p>Arraste imagens ou clique para enviar</p>
+                </div>
+            </div>
+            <!-- We will handle upload inside the form submission naturally, or via separate endpoint? 
+                 For simplicity, let's keep the upload tab just as a proxy to the file input 
+                 BUT actually, the user wants "choose from library instead of PC". 
+                 So the MAIN action is picking existing. 
+                 Upload tab is just "Standard behavior".
+            -->
+        </div>
+
+        <div class="media-modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeMediaPicker()">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="select-confirm-btn" disabled onclick="confirmSelection()">Selecionar</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .media-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+    }
+
+    .media-modal.visible {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .media-modal-content {
+        background: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        width: 90%;
+        max-width: 900px;
+        height: 80vh;
+        border-radius: var(--radius-md);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .media-modal-header {
+        padding: 1rem;
+        border-bottom: 1px solid var(--admin-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .media-modal-header h3 { margin: 0; font-size: 1.2rem; }
+
+    .close-modal {
+        background: none;
+        border: none;
+        color: var(--admin-text);
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .media-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--admin-border);
+        background: var(--admin-bg);
+    }
+
+    .tab-btn {
+        padding: 1rem 2rem;
+        background: none;
+        border: none;
+        color: var(--admin-text-muted);
+        cursor: pointer;
+        font-weight: 500;
+        border-bottom: 2px solid transparent;
+    }
+
+    .tab-btn.active {
+        color: var(--admin-accent);
+        border-bottom-color: var(--admin-accent);
+        background: var(--admin-surface);
+    }
+
+    .tab-content {
+        display: none;
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .library-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+
+    .lib-item {
+        aspect-ratio: 1;
+        border: 2px solid transparent;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .lib-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .lib-item.selected {
+        border-color: var(--admin-accent);
+        box-shadow: 0 0 0 2px var(--admin-accent);
+    }
+
+    .lib-item.selected::after {
+        content: '✓';
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: var(--admin-accent);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .media-modal-footer {
+        padding: 1rem;
+        border-top: 1px solid var(--admin-border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+    
+    .hidden { display: none; }
+</style>
+
+<style>
+    .media-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .media-modal.visible {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .media-modal-content {
+        background: var(--admin-bg);
+        border: 1px solid var(--admin-border);
+        width: 90%;
+        max-width: 1000px;
+        height: 85vh;
+        border-radius: var(--radius-lg);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            transform: translateY(30px) scale(0.95);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .media-modal-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--admin-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%);
+    }
+
+    .media-modal-header h3 { 
+        margin: 0; 
+        font-size: 1.4rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--admin-accent) 0%, #9333ea 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .close-modal {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text);
+        font-size: 1.5rem;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .close-modal:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: #ef4444;
+        color: #ef4444;
+        transform: rotate(90deg);
+    }
+
+    .media-tabs {
+        display: flex;
+        border-bottom: 2px solid var(--admin-border);
+        background: var(--admin-surface);
+        padding: 0 1.5rem;
+    }
+
+    .tab-btn {
+        padding: 1rem 2rem;
+        background: none;
+        border: none;
+        color: var(--admin-text-muted);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+        position: relative;
+        letter-spacing: 0.3px;
+    }
+
+    .tab-btn:hover {
+        color: var(--admin-text);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tab-btn.active {
+        color: var(--admin-accent);
+        border-bottom-color: var(--admin-accent);
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .tab-btn.active::before {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--admin-accent) 0%, #9333ea 100%);
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    .tab-content {
+        display: none;
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+        background: var(--admin-bg);
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .library-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1.5rem;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .lib-item {
+        aspect-ratio: 1;
+        border: 3px solid transparent;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: var(--admin-surface);
+    }
+
+    .lib-item::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: 1;
+    }
+
+    .lib-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .lib-item:hover::before {
+        opacity: 1;
+    }
+
+    .lib-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+
+    .lib-item:hover img {
+        transform: scale(1.1);
+    }
+
+    .lib-item.selected {
+        border-color: var(--admin-accent);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 8px 24px rgba(59, 130, 246, 0.3);
+        transform: translateY(-4px);
+    }
+
+    .lib-item.selected::after {
+        content: '✓';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: linear-gradient(135deg, var(--admin-accent) 0%, #9333ea 100%);
+        color: white;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+        z-index: 2;
+        animation: checkPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes checkPop {
+        0% { transform: scale(0) rotate(-180deg); }
+        100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .loading-spinner {
+        text-align: center;
+        padding: 4rem;
+        color: var(--admin-text-muted);
+        font-size: 1.1rem;
+    }
+
+    .media-modal-footer {
+        padding: 1.5rem 2rem;
+        border-top: 1px solid var(--admin-border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(147, 51, 234, 0.03) 100%);
+    }
+
+    .media-modal-footer .btn {
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border-radius: var(--radius-md);
+        transition: all 0.2s;
+    }
+
+    .media-modal-footer .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .media-modal-footer .btn-primary:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .media-modal-footer .btn-secondary:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Upload tab styling */
+    .upload-dropzone {
+        border: 3px dashed var(--admin-border);
+        border-radius: var(--radius-lg);
+        padding: 4rem 2rem;
+        text-align: center;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(147, 51, 234, 0.03) 100%);
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .upload-dropzone::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 51, 234, 0.08) 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .upload-dropzone:hover {
+        border-color: var(--admin-accent);
+        border-style: solid;
+        transform: translateY(-2px);
+    }
+
+    .upload-dropzone:hover::before {
+        opacity: 1;
+    }
+
+    .upload-dropzone input[type="file"] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .upload-message {
+        position: relative;
+        z-index: 1;
+    }
+
+    .upload-message .icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 1rem;
+        filter: grayscale(0.3);
+        transition: all 0.3s;
+    }
+
+    .upload-dropzone:hover .upload-message .icon {
+        filter: grayscale(0);
+        transform: scale(1.1);
+    }
+
+    .upload-message p {
+        color: var(--admin-text-muted);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .upload-message p strong {
+        color: var(--admin-accent);
+        font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+        .media-modal-content {
+            width: 95%;
+            height: 90vh;
+        }
+
+        .library-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem;
+        }
+
+        .media-tabs {
+            padding: 0 0.5rem;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+
+<script is:inline>
+    let currentTargetInput = null;
+    let currentPreviewCallback = null;
+    let isMultiple = false;
+    let selectedImages = [];
+    let allImages = [];
+
+    // Global functions to be accessed by parent pages
+    window.openMediaPicker = function(targetInputId, previewCallback, multiple = false) {
+        const modal = document.getElementById('media-picker-modal');
+        modal.classList.remove('hidden');
+        // Force reflow
+        void modal.offsetWidth;
+        modal.classList.add('visible');
+
+        currentTargetInput = document.getElementById(targetInputId);
+        currentPreviewCallback = previewCallback;
+        isMultiple = multiple;
+        selectedImages = [];
+        updateConfirmButton();
+
+        // Check active tab. If Upload tab is active, user wants library first usually?
+        // Let's default to Library tab every clear open
+        switchTab('library');
+        loadImages();
+    };
+
+    window.closeMediaPicker = function() {
+        const modal = document.getElementById('media-picker-modal');
+        modal.classList.remove('visible');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    };
+
+    window.switchTab = function(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        // Find button (hacky selector but works for simple structure)
+        const buttons = document.querySelectorAll('.tab-btn');
+        if (tabName === 'library') buttons[0].classList.add('active');
+        else buttons[1].classList.add('active');
+    };
+
+    async function loadImages() {
+        const grid = document.getElementById('library-grid');
+        if (allImages.length === 0) {
+            try {
+                const res = await fetch('/api/images');
+                allImages = await res.json();
+            } catch (e) {
+                grid.innerHTML = '<p>Erro ao carregar imagens.</p>';
+                return;
+            }
+        }
+        
+        renderGrid();
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('library-grid');
+        grid.innerHTML = '';
+        
+        if (allImages.length === 0) {
+            grid.innerHTML = '<p>Nenhuma imagem na biblioteca.</p>';
+            return;
+        }
+
+        allImages.forEach(img => {
+            const div = document.createElement('div');
+            div.className = 'lib-item';
+            div.innerHTML = `<img src="${img.url}" loading="lazy" />`;
+            div.onclick = () => toggleSelection(img.url, div);
+            grid.appendChild(div);
+        });
+    }
+
+    function toggleSelection(url, element) {
+        if (!isMultiple) {
+            // Single select: clear others
+            selectedImages = [url];
+            document.querySelectorAll('.lib-item').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+        } else {
+            // Multi select
+            const index = selectedImages.indexOf(url);
+            if (index > -1) {
+                selectedImages.splice(index, 1);
+                element.classList.remove('selected');
+            } else {
+                selectedImages.push(url);
+                element.classList.add('selected');
+            }
+        }
+        updateConfirmButton();
+    }
+
+    function updateConfirmButton() {
+        const btn = document.getElementById('select-confirm-btn');
+        btn.disabled = selectedImages.length === 0;
+        btn.innerText = `Selecionar (${selectedImages.length})`;
+    }
+
+    window.confirmSelection = function() {
+        if (currentPreviewCallback) {
+            currentPreviewCallback(selectedImages);
+        }
+        
+        // Populate Hidden Input for Form Submission
+        // We need a way to tell the form "Use these URLs" instead of the File Input.
+        // The strategies are:
+        // 1. Create a hidden input for "selected_library_images"
+        // 2. Or assume the parent page handles the data array.
+        // Let's use a hidden input logic. We might need to append a new hidden input to the form.
+        
+        if (currentTargetInput) {
+             const form = currentTargetInput.form;
+             // Create or update a hidden input specifically for library selections
+             // Name convention: targetInput name + "_library"
+             const hiddenName = currentTargetInput.name + "_library";
+             let hiddenInput = form.querySelector(`input[name="${hiddenName}"]`);
+             if (!hiddenInput) {
+                 hiddenInput = document.createElement('input');
+                 hiddenInput.type = 'hidden';
+                 hiddenInput.name = hiddenName;
+                 form.appendChild(hiddenInput);
+             }
+             
+             // Append or Replace? 
+             // If multiple, maybe we are adding to existing? NO, simple replace for now is safer UI.
+             // Actually, for Gallery, we want to ADD. For Cover, REPLACE.
+             // Let's handle this via the callback too? 
+             // The callback is strictly UI preview. 
+             // The DATA needs to be in the form.
+             
+             // Logic: Update the value to JSON string of URLs
+             const currentVal = hiddenInput.value ? JSON.parse(hiddenInput.value) : [];
+             const newVal = isMultiple ? [...currentVal, ...selectedImages] : selectedImages;
+             hiddenInput.value = JSON.stringify(newVal);
+        }
+
+        closeMediaPicker();
+    };
+</script>

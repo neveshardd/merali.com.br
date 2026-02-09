@@ -1,0 +1,110 @@
+---
+---
+
+<section id="servicos" class="services-section">
+	<div class="container">
+        <h2 class="section-label">ÁREAS DE ATUAÇÃO</h2>
+		<div class="services-grid">
+			<div class="service-item">
+				<h3>01</h3>
+				<h4>PROJETOS<br>RESIDENCIAIS</h4>
+				<p>Casas personalizadas que refletem a identidade dos moradores, integrando conforto, estética e funcionalidade.</p>
+			</div>
+			<div class="service-item">
+				<h3>02</h3>
+				<h4>ARQUITETURA<br>COMERCIAL</h4>
+				<p>Espaços corporativos e comerciais desenhados para fortalecer marcas e otimizar experiências.</p>
+			</div>
+			<div class="service-item">
+				<h3>03</h3>
+				<h4>DESIGN DE<br>INTERIORES</h4>
+				<p>Curadoria de mobiliário, iluminação e acabamentos para criar atmosferas únicas e acolhedoras.</p>
+			</div>
+			<div class="service-item">
+				<h3>04</h3>
+				<h4>URBANISMO &<br>PAISAGISMO</h4>
+				<p>Planejamento de espaços externos que dialogam com a arquitetura e promovem bem-estar.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.services-section {
+		padding: 8rem 0;
+		background-color: #1a1d24; /* Slightly lighter dark for contrast */
+		color: white;
+	}
+
+	.container {
+		max-width: 1100px;
+		margin: 0 auto;
+	}
+
+    .section-label {
+        font-size: 0.9rem;
+		font-weight: 600;
+		letter-spacing: 2px;
+		color: rgba(255, 255, 255, 0.5);
+		margin-bottom: 4rem;
+        text-transform: uppercase;
+    }
+
+	.services-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 2rem;
+	}
+
+	.service-item {
+        position: relative;
+		padding-top: 2rem;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+        transition: border-color 0.3s ease;
+	}
+
+    .service-item:hover {
+        border-top-color: rgba(255, 255, 255, 0.5);
+    }
+
+	.service-item h3 {
+		font-size: 0.9rem;
+		font-weight: 300;
+		opacity: 0.5;
+		margin-bottom: 1.5rem;
+	}
+
+	.service-item h4 {
+		font-size: 1.2rem;
+		line-height: 1.4;
+		margin-bottom: 1.5rem;
+		font-weight: 500;
+		letter-spacing: 1px;
+	}
+
+	.service-item p {
+		font-size: 0.9rem;
+		line-height: 1.6;
+		opacity: 0.6;
+		font-weight: 300;
+	}
+
+    @media (max-width: 1150px) {
+        .container {
+            padding: 0 2rem;
+        }
+    }
+
+	@media (max-width: 1024px) {
+		.services-grid {
+			grid-template-columns: repeat(2, 1fr);
+            gap: 4rem 2rem;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.services-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

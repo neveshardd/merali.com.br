@@ -1,0 +1,299 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Studio - Meralis">
+	<Header />
+	<main>
+		<!-- Intro Section -->
+		<section class="intro-section">
+			<div class="container">
+				<div class="intro-content">
+					<h1 class="main-title">DO TRAÇO<br>À IMAGEM</h1>
+					<p class="intro-text">
+						O Meralis Studio é um laboratório de visualização arquitetônica e design. Focados em traduzir conceitos complexos em imagens hiper-realistas, ajudamos arquitetos e incorporadores a comunicarem suas visões antes mesmo de serem construídas.
+					</p>
+				</div>
+                <div class="intro-image">
+                    <img src="/hero-render.png" alt="Meralis Studio Workspace" />
+                </div>
+			</div>
+		</section>
+
+		<!-- Philosophy Grid -->
+		<section class="philosophy-section">
+			<div class="container">
+				<div class="philosophy-grid">
+					<div class="philosophy-item">
+						<h3>REALISMO</h3>
+						<p>Buscamos a fidelidade não apenas nos materiais, mas na luz e na física. Nossas imagens são construídas para confundir os limites entre o virtual e o real.</p>
+					</div>
+					<div class="philosophy-item">
+						<h3>ATMOSFERA</h3>
+						<p>Mais do que mostrar espaços, transmitimos sensações. A luz, a sombra e a composição são usadas para criar narrativas visuais emotivas.</p>
+					</div>
+					<div class="philosophy-item">
+						<h3>DETALHE</h3>
+						<p>Acreditamos que a qualidade está nas minúcias. Do veio da madeira ao reflexo no vidro, cada elemento é texturizado com precisão.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Team Section -->
+		<section class="team-section">
+			<div class="container">
+				<h2 class="section-title">QUEM FAZ</h2>
+				<div class="team-grid single-member">
+					<!-- Founder -->
+					<div class="team-member">
+						<div class="member-image">
+							<img src="/hero-render.png" alt="Fundador Meralis" style="object-position: center top;" />
+						</div>
+						<div class="member-info">
+							<h4>SEU NOME</h4>
+							<span class="role">FUNDADOR & 3D ARTIST</span>
+							<p>Estudante de Arquitetura e Urbanismo e apaixonado por computação gráfica. Combina o olhar técnico do arquiteto com a sensibilidade artística da fotografia digital para criar apresentações de alto impacto.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+        <!-- Stats/Manifesto Section -->
+        <section class="manifesto-section">
+            <div class="container">
+                <div class="manifesto-content">
+                    <blockquote>
+                        "A visualização é a ponte entre o sonho do arquiteto e a compreensão do cliente."
+                    </blockquote>
+                </div>
+            </div>
+        </section>
+	</main>
+    <Footer />
+</Layout>
+
+<style>
+	main {
+		background-color: #13151a;
+		min-height: 100vh;
+        padding-top: 150px;
+        padding-bottom: 0; 
+        color: white;
+	}
+
+	.container {
+		max-width: 1100px;
+		margin: 0 auto;
+        padding: 0 2rem;
+	}
+
+    /* Intro Section */
+    .intro-section {
+        margin-bottom: 8rem;
+    }
+
+    .intro-content {
+        max-width: 800px;
+        margin-bottom: 4rem;
+    }
+
+	.main-title {
+		font-size: 4rem;
+		font-weight: 700;
+		line-height: 1;
+		margin-bottom: 2rem;
+        letter-spacing: -1px;
+	}
+
+	.intro-text {
+		font-size: 1.25rem;
+		font-weight: 300;
+		line-height: 1.6;
+        opacity: 0.8;
+        max-width: 600px;
+	}
+
+    .intro-image {
+        width: 100%;
+        height: 500px;
+        position: relative;
+    }
+
+    .intro-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: grayscale(100%);
+        transition: filter 0.5s ease;
+    }
+
+    .intro-image:hover img {
+        filter: grayscale(0%);
+    }
+
+    /* Philosophy Section */
+    .philosophy-section {
+        margin-bottom: 8rem;
+        padding: 4rem 0;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .philosophy-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4rem;
+    }
+
+    .philosophy-item h3 {
+        font-size: 1rem;
+        letter-spacing: 2px;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .philosophy-item p {
+        font-size: 1rem;
+        line-height: 1.7;
+        font-weight: 300;
+    }
+
+    /* Team Section */
+    .team-section {
+        margin-bottom: 8rem;
+    }
+
+    .section-title {
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+        margin-bottom: 4rem;
+        opacity: 0.5;
+        text-align: center;
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+    }
+
+    .team-grid.single-member {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .team-member {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .member-image {
+        width: 100%;
+        height: 400px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .member-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: grayscale(100%);
+        transition: transform 0.5s ease, filter 0.5s ease;
+    }
+
+    .team-member:hover .member-image img {
+        transform: scale(1.03);
+        filter: grayscale(0%);
+    }
+
+    .member-info h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        letter-spacing: 1px;
+    }
+
+    .role {
+        display: block;
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        margin-bottom: 1.5rem;
+        opacity: 0.6;
+    }
+
+    .member-info p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        opacity: 0.8;
+        font-weight: 300;
+    }
+
+    /* Manifesto */
+    .manifesto-section {
+        padding: 8rem 0;
+        background-color: #0f1115;
+        text-align: center;
+    }
+
+    blockquote {
+        font-size: 2rem;
+        font-weight: 300; /* Serif font could work here too for contrast */
+        font-style: italic;
+        max-width: 800px;
+        margin: 0 auto 2rem;
+        line-height: 1.4;
+    }
+
+    cite {
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+        font-style: normal;
+        opacity: 0.6;
+        text-transform: uppercase;
+    }
+
+    @media (max-width: 1024px) {
+        .main-title {
+            font-size: 3rem;
+        }
+
+        .philosophy-grid {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+
+        .team-grid {
+            grid-template-columns: 1fr;
+            gap: 4rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        main {
+            padding-top: 100px;
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+        }
+
+        .intro-text {
+            font-size: 1.1rem;
+        }
+        
+        .intro-image {
+            height: 300px;
+        }
+
+        blockquote {
+            font-size: 1.5rem;
+            padding: 0 1rem;
+        }
+    }
+</style>

@@ -1,0 +1,265 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { getProjectBySlug } from '../../db/queries';
+
+// SSR Mode: No getStaticPaths needed
+const { slug } = Astro.params;
+
+if (!slug) {
+    return Astro.redirect('/404');
+}
+
+const project = await getProjectBySlug(slug);
+
+if (!project) {
+    return Astro.redirect('/404');
+}
+
+// Parse project images
+let images: string[] = [];
+try {
+    images = JSON.parse(project.images || '[]');
+} catch (e) {
+    images = [project.images || ''];
+}
+
+// Main image is the first one
+const mainImage = images.length > 0 ? images[0] : '/hero-render.png';
+// Gallery images are the rest
+const galleryImages = images.slice(1);
+
+---
+
+<Layout title={`${project.title} - Meralis Studio`}>
+	<Header />
+	<main>
+        <section class="project-hero">
+            <div class="hero-image">
+                <img src={mainImage} alt={project.title} />
+                <div class="overlay"></div>
+            </div>
+            <div class="hero-content">
+                <div class="container">
+                    <span class="category">{project.category}</span>
+                    <h1>{project.title}</h1>
+                </div>
+            </div>
+        </section>
+
+        <section class="project-details">
+            <div class="container">
+                <div class="details-grid">
+                    <div class="info-specs">
+                        <div class="spec-item">
+                            <h3>ANO</h3>
+                            <p>{project.year || '-'}</p>
+                        </div>
+                        <div class="spec-item">
+                            <h3>LOCAL</h3>
+                            <p>{project.location || '-'}</p>
+                        </div>
+                        <div class="spec-item">
+                            <h3>ÁREA</h3>
+                            <p>{project.area || '-'}</p>
+                        </div>
+                    </div>
+
+                    <div class="description-column">
+                        <p class="project-description">
+                            {project.description}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Additional Gallery Grid -->
+                {galleryImages.length > 0 && (
+                    <div class="project-gallery-grid">
+                        {galleryImages.map((img, index) => (
+                             <div class="gallery-image-item">
+                                <img src={img} alt={`Detalhe ${project.title} ${index + 1}`} loading="lazy" />
+                             </div>
+                        ))}
+                    </div>
+                )}
+                
+                <div class="project-nav">
+                    <a href="/projetos" class="back-link">&larr; VOLTAR PARA PROJETOS</a>
+                </div>
+            </div>
+        </section>
+	</main>
+    <Footer />
+</Layout>
+
+<style>
+	main {
+		background-color: #13151a;
+		min-height: 100vh;
+        color: white;
+	}
+
+    .project-hero {
+        position: relative;
+        height: 80vh;
+        width: 100%;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .hero-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .hero-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        padding-bottom: 6rem;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .category {
+        display: block;
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        opacity: 0.8;
+    }
+
+    h1 {
+        font-size: 4rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .project-details {
+        padding: 6rem 0;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 4rem;
+        margin-bottom: 6rem;
+    }
+
+    .info-specs {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        padding-right: 2rem;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .spec-item h3 {
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0.5;
+        margin-bottom: 0.5rem;
+    }
+
+    .spec-item p {
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .description-column {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        font-weight: 300;
+        color: rgba(255,255,255,0.8);
+    }
+    
+    .project-gallery-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 4rem;
+        margin-bottom: 4rem;
+    }
+
+    .gallery-image-item img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .project-nav {
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 4rem;
+    }
+
+    .back-link {
+        color: white;
+        text-decoration: none;
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+    }
+
+    .back-link:hover {
+        opacity: 1;
+    }
+
+    @media(max-width: 1024px) {
+        h1 {
+            font-size: 3rem;
+        }
+    }
+
+    @media(max-width: 768px) {
+        .details-grid {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+
+        .info-specs {
+            flex-direction: row;
+            flex-wrap: wrap;
+            border-right: none;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-right: 0;
+            padding-bottom: 2rem;
+            justify-content: space-between;
+        }
+
+        .hero-content {
+             padding-bottom: 4rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+        }
+    }
+</style>

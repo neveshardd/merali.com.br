@@ -1,0 +1,371 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Serviços - Meralis">
+	<Header />
+	<main>
+		<section class="page-header">
+			<div class="container">
+				<h1>O QUE FAZEMOS</h1>
+				<p>Transformamos projetos em imagens impactantes através da computação gráfica.</p>
+			</div>
+		</section>
+
+        <section class="services-detailed">
+            <div class="container">
+                
+                <!-- Service 1 -->
+                <div class="service-row">
+                    <div class="service-image">
+                        <img src="/hero-render.png" alt="Visualização Arquitetônica" style="object-position: center;" />
+                    </div>
+                    <div class="service-content">
+                        <span class="service-number">01</span>
+                        <h2>VISUALIZAÇÃO 3D</h2>
+                        <p class="lead">Imagens estáticas que vendem ideias.</p>
+                        <p class="description">
+                            Produzimos renders fotorealistas que valorizam a arquitetura e o design de interiores. Nossas imagens são ferramentas essenciais para aprovação de projetos, lançamentos imobiliários e portfólios de arquitetura.
+                        </p>
+                        <ul class="features-list">
+                            <li>Renders Externos</li>
+                            <li>Renders Internos</li>
+                            <li>Humanização de Plantas</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="service-row reverse">
+                    <div class="service-image">
+                        <img src="/hero-render.png" alt="Animação 3D" style="object-position: left;" />
+                    </div>
+                    <div class="service-content">
+                        <span class="service-number">02</span>
+                        <h2>ANIMAÇÃO ARQUITETÔNICA</h2>
+                        <p class="lead">Narrativas em movimento.</p>
+                        <p class="description">
+                            Vídeos cinematográficos que percorrem o projeto, mostrando a fluidez dos espaços, a incidência de luz e a interação dos materiais. A melhor forma de imergir o cliente na atmosfera proposta.
+                        </p>
+                        <ul class="features-list">
+                            <li>Fly-through (Voo)</li>
+                            <li>Walk-through (Passeio)</li>
+                            <li>Takes de Detalhes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="service-row">
+                    <div class="service-image">
+                        <img src="/hero-render.png" alt="Modelagem 3D" style="object-position: right;" />
+                    </div>
+                    <div class="service-content">
+                        <span class="service-number">03</span>
+                        <h2>MODELAGEM 3D</h2>
+                        <p class="lead">A base digital do seu projeto.</p>
+                        <p class="description">
+                            Desenvolvemos o modelo tridimensional completo do edificado e interiores a partir de plantas 2D (CAD/PDF). Um modelo limpo e organizado, pronto para renderização ou estudos volumétricos.
+                        </p>
+                        <ul class="features-list">
+                            <li>Modelagem SketchUp/Max</li>
+                            <li>Blocos Personalizados</li>
+                            <li>Maquete Eletrônica</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 4 -->
+                <div class="service-row reverse">
+                    <div class="service-image">
+                        <img src="/hero-render.png" alt="Consultoria" style="object-position: bottom;" />
+                    </div>
+                    <div class="service-content">
+                        <span class="service-number">04</span>
+                        <h2>CONSULTORIA DE DESIGN</h2>
+                        <p class="lead">Apoio criativo para seus ambientes.</p>
+                        <p class="description">
+                            Auxiliamos na escolha de acabamentos, paleta de cores e mobiliário para compor o visual final do espaço. Um suporte estético para quem precisa visualizar opções antes de bater o martelo.
+                        </p>
+                        <ul class="features-list">
+                            <li>Estudos de Fachada</li>
+                            <li>Moodboards</li>
+                            <li>Layout de Interiores</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="process-section">
+            <div class="container">
+                <h2 class="section-title">FLUXO DE TRABALHO</h2>
+                <div class="process-grid">
+                    <div class="process-step">
+                        <div class="icon">I</div>
+                        <h3>BRIEFING</h3>
+                        <p>Recebimento dos arquivos (DWG/SKP) e referências de estilo e materiais.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="icon">II</div>
+                        <h3>MODELAGEM</h3>
+                        <p>Levantamento do 3D e definição dos ângulos (câmeras) para aprovação.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="icon">III</div>
+                        <h3>PREVIEW</h3>
+                        <p>Aplicação de texturas e luzes. Envio de prévias em baixa para ajustes.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="icon">IV</div>
+                        <h3>RENDER FINAL</h3>
+                        <p>Renderização em alta resolução e pós-produção para entrega dos arquivos finais.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+	</main>
+    <Footer />
+</Layout>
+
+<style>
+	main {
+		background-color: #13151a;
+		min-height: 100vh;
+        padding-top: 150px;
+        padding-bottom: 8rem;
+        color: white;
+	}
+
+	.container {
+		max-width: 1100px;
+		margin: 0 auto;
+        padding: 0 2rem;
+	}
+
+    /* Page Header */
+	.page-header {
+		margin-bottom: 6rem;
+        text-align: center;
+	}
+
+	h1 {
+		font-size: 3rem;
+		font-weight: 700;
+		color: white;
+		margin-bottom: 1rem;
+		letter-spacing: 2px;
+        text-transform: uppercase;
+	}
+
+	.page-header p {
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 1.1rem;
+		font-weight: 300;
+        max-width: 600px;
+        margin: 0 auto;
+	}
+
+    /* Detailed Services Rows */
+    .services-detailed {
+        margin-bottom: 8rem;
+    }
+
+    .service-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6rem;
+        margin-bottom: 8rem;
+        align-items: center;
+    }
+
+    .service-row.reverse {
+        direction: rtl; /* Quick way to swap columns for desktop */
+    }
+
+    .service-row.reverse .service-content {
+        direction: ltr; /* Reset text direction */
+    }
+
+    .service-image {
+        position: relative;
+        height: 500px;
+        overflow: hidden;
+    }
+
+    .service-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: grayscale(100%);
+        transition: filter 0.5s ease;
+    }
+
+    .service-image:hover img {
+        filter: grayscale(0%);
+    }
+
+    .service-content {
+        padding: 2rem 0;
+    }
+
+    .service-number {
+        display: block;
+        font-size: 4rem;
+        font-weight: 700;
+        opacity: 0.1;
+        line-height: 1;
+        margin-bottom: 1rem;
+    }
+
+    .service-content h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        letter-spacing: 1px;
+    }
+
+    .lead {
+        font-size: 1.1rem;
+        color: rgba(255,255,255,0.8);
+        margin-bottom: 1.5rem;
+        font-style: italic;
+        font-weight: 300;
+    }
+
+    .description {
+        font-size: 1rem;
+        line-height: 1.7;
+        color: rgba(255,255,255,0.6);
+        margin-bottom: 2rem;
+        font-weight: 300;
+    }
+
+    .features-list {
+        list-style: none;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .features-list li {
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: rgba(255,255,255,0.8);
+        padding-left: 1.5rem;
+        position: relative;
+    }
+
+    .features-list li::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        color: rgba(255,255,255,0.4);
+    }
+
+
+    /* Process Section */
+    .process-section {
+        padding: 6rem 0;
+        background-color: #0f1115; /* Slightly darker background box */
+        border-radius: 4px;
+        margin: 0 2rem; /* Indent slightly */
+    }
+    
+    /* Correct margin for responsive padding consistency */
+    .process-section .container {
+        padding: 0; /* Container inside has no padding, handled by section margin */
+    }
+
+    .section-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 4rem;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .process-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+    }
+
+    .process-step {
+        text-align: center;
+        padding: 0 1rem;
+    }
+
+    .icon {
+        font-family: 'Times New Roman', serif;
+        font-size: 2rem;
+        font-style: italic;
+        color: rgba(255,255,255,0.3);
+        margin-bottom: 1.5rem;
+    }
+
+    .process-step h3 {
+        font-size: 1rem;
+        letter-spacing: 1px;
+        margin-bottom: 1rem;
+    }
+
+    .process-step p {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: rgba(255,255,255,0.6);
+        font-weight: 300;
+    }
+
+
+    @media (max-width: 1024px) {
+        .service-row {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+            margin-bottom: 6rem;
+        }
+
+        .service-row.reverse {
+            direction: ltr; /* Remove reverse direction on mobile */
+        }
+
+        .service-image {
+            height: 400px;
+        }
+
+        .process-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem 2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        main {
+            padding-top: 100px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+        }
+
+        .service-image {
+            height: 300px;
+        }
+
+        .process-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .process-section {
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .container {
+            padding: 0 2rem;
+        }
+    }
+</style>

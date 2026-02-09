@@ -1,0 +1,49 @@
+---
+import '../styles/admin.css';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Meralis Admin" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+		<title>{title} | Admin</title>
+	</head>
+	<body>
+        <div class="admin-header">
+            <div class="admin-container admin-header-content">
+                <div class="admin-logo">Meralis Dashboard</div>
+                <nav class="admin-nav">
+                    <a href="/admin">Projetos</a>
+                    <a href="/admin/create">Novo Projeto</a>
+                    <a href="/admin/gallery">Mídia</a>
+                    <a href="/" target="_blank">Ver Site</a>
+                    <form action="/admin/logout" method="POST" style="display:inline;">
+                        <button type="submit" class="logout-btn">Sair</button>
+                    </form>
+                </nav>
+            </div>
+        </div>
+		<slot />
+	</body>
+</html>
+
+<style>
+    /* Specific override for the logout button in header if needed, 
+       but admin.css handles .admin-nav button */
+    .logout-btn {
+       color: var(--admin-danger, #ef4444) !important;
+    }
+</style>
