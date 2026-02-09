@@ -4,12 +4,22 @@ import { projects } from './schema';
 import { eq, desc } from 'drizzle-orm';
 
 export const getProjects = async () => {
-    return await db.select().from(projects).orderBy(desc(projects.createdAt));
+    try {
+        return await db.select().from(projects).orderBy(desc(projects.createdAt));
+    } catch (e) {
+        console.error("Fetch projects error:", e);
+        return [];
+    }
 };
 
 export const getProjectBySlug = async (slug: string) => {
-    const result = await db.select().from(projects).where(eq(projects.slug, slug)).limit(1);
-    return result[0];
+    try {
+        const result = await db.select().from(projects).where(eq(projects.slug, slug)).limit(1);
+        return result[0];
+    } catch (e) {
+        console.error("Fetch project by slug error:", e);
+        return null;
+    }
 };
 
 export const createProject = async (data: typeof projects.$inferInsert) => {
@@ -26,8 +36,13 @@ export const deleteProject = async (id: string) => {
 };
 
 export const getProjectById = async (id: string) => {
-    const result = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
-    return result[0];
+    try {
+        const result = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
+        return result[0];
+    } catch (e) {
+        console.error("Fetch project by id error:", e);
+        return null;
+    }
 };
 
 

@@ -2,13 +2,13 @@
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';
 import * as schema from './schema';
-import 'dotenv/config'; // Ensure env vars are loaded
 
 // Use Environment Variables for DB Connection
 // For Vercel/Production with Turso: TURSO_DATABASE_URL and TURSO_AUTH_TOKEN
 // For Local Dev: file:local.db
-const url = process.env.TURSO_DATABASE_URL || 'file:local.db';
-const authToken = process.env.TURSO_AUTH_TOKEN;
+// Astro uses import.meta.env for env vars
+const url = (import.meta.env.TURSO_DATABASE_URL) || 'file:local.db';
+const authToken = import.meta.env.TURSO_AUTH_TOKEN;
 
 const client = createClient({
   url,
@@ -36,7 +36,12 @@ export const initDb = async () => {
             created_at INTEGER DEFAULT (unixepoch())
             )
         `);
+        console.log("Database initialized successfully.");
     } catch (e) {
-        console.error("Error initializing DB table:", e);
+        // Log error but don't crash the whole app if table exists or connection is read-only
+        console.warn("DB Init Note:", e instanceof Error ? e.message : e);
     }
 };
+
+// Try to auto-initialize
+initDb().catch(err => console.error("Auto-init failed:", err));
