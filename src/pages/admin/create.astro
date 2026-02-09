@@ -258,11 +258,10 @@ if (Astro.request.method === "POST") {
 
     function previewGallery(input) {
         const container = document.getElementById('gallery-preview-container');
-        // Clear previous previews if needed, or append? 
-        // For simple implementations, just showing selected files from THIS input is easiest.
-        // Handling accumulation of files from multiple inputs needs a DataTransfer which is complex for basic UI.
-        // Let's replace previews for now to match the file input behavior (replacing selection).
-        container.innerHTML = ''; 
+        // Clear container safely
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
 
         if (input.files) {
             Array.from(input.files).forEach((file) => {
@@ -270,7 +269,12 @@ if (Astro.request.method === "POST") {
                 reader.onload = function(e) {
                     const div = document.createElement('div');
                     div.className = 'preview-item';
-                    div.innerHTML = `<img src="${e.target.result}" />`;
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = 'Preview';
+                    
+                    div.appendChild(img);
                     container.appendChild(div);
                 }
                 reader.readAsDataURL(file);
@@ -284,7 +288,12 @@ if (Astro.request.method === "POST") {
         urls.forEach(url => {
             const div = document.createElement('div');
             div.className = 'preview-item';
-            div.innerHTML = `<img src="${url}" />`;
+            
+            const img = document.createElement('img');
+            img.src = url; // URL from trusted source (our own API)
+            img.alt = 'Gallery image';
+            
+            div.appendChild(img);
             container.appendChild(div);
         });
     }

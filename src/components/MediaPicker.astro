@@ -593,7 +593,13 @@
                 const res = await fetch('/api/images');
                 allImages = await res.json();
             } catch (e) {
-                grid.innerHTML = '<p>Erro ao carregar imagens.</p>';
+                // Clear grid safely
+                while (grid.firstChild) {
+                    grid.removeChild(grid.firstChild);
+                }
+                const p = document.createElement('p');
+                p.textContent = 'Erro ao carregar imagens.';
+                grid.appendChild(p);
                 return;
             }
         }
@@ -603,17 +609,29 @@
 
     function renderGrid() {
         const grid = document.getElementById('library-grid');
-        grid.innerHTML = '';
+        
+        // Clear grid safely
+        while (grid.firstChild) {
+            grid.removeChild(grid.firstChild);
+        }
         
         if (allImages.length === 0) {
-            grid.innerHTML = '<p>Nenhuma imagem na biblioteca.</p>';
+            const p = document.createElement('p');
+            p.textContent = 'Nenhuma imagem na biblioteca.';
+            grid.appendChild(p);
             return;
         }
 
         allImages.forEach(img => {
             const div = document.createElement('div');
             div.className = 'lib-item';
-            div.innerHTML = `<img src="${img.url}" loading="lazy" />`;
+            
+            const imgEl = document.createElement('img');
+            imgEl.src = img.url; // URL from our trusted API
+            imgEl.loading = 'lazy';
+            imgEl.alt = img.filename || 'Library image';
+            
+            div.appendChild(imgEl);
             div.onclick = () => toggleSelection(img.url, div);
             grid.appendChild(div);
         });

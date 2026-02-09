@@ -314,14 +314,23 @@ if (Astro.request.method === "POST") {
     // Preview New Gallery Items
     function previewGallery(input) {
         const container = document.getElementById('gallery-preview-container');
-        container.innerHTML = ''; 
+        // Clear container safely
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+        
         if (input.files) {
             Array.from(input.files).forEach((file) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const div = document.createElement('div');
                     div.className = 'preview-item';
-                    div.innerHTML = `<img src="${e.target.result}" />`;
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = 'Preview';
+                    
+                    div.appendChild(img);
                     container.appendChild(div);
                 }
                 reader.readAsDataURL(file);
@@ -334,7 +343,12 @@ if (Astro.request.method === "POST") {
         urls.forEach(url => {
             const div = document.createElement('div');
             div.className = 'preview-item';
-            div.innerHTML = `<img src="${url}" />`;
+            
+            const img = document.createElement('img');
+            img.src = url; // URL from trusted source
+            img.alt = 'Gallery image';
+            
+            div.appendChild(img);
             container.appendChild(div);
         });
     }
