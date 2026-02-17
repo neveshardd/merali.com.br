@@ -42,25 +42,7 @@ import Footer from '../components/Footer.astro';
 			</div>
 		</section>
 
-		<!-- Team Section -->
-		<section class="team-section">
-			<div class="container">
-				<h2 class="section-title">QUEM FAZ</h2>
-				<div class="team-grid single-member">
-					<!-- Founder -->
-					<div class="team-member">
-						<div class="member-image">
-							<img src="/hero-render.png" alt="Fundador Meralis" style="object-position: center top;" />
-						</div>
-						<div class="member-info">
-							<h4>SEU NOME</h4>
-							<span class="role">FUNDADOR & 3D ARTIST</span>
-							<p>Estudante de Arquitetura e Urbanismo e apaixonado por computação gráfica. Combina o olhar técnico do arquiteto com a sensibilidade artística da fotografia digital para criar apresentações de alto impacto.</p>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
+
 
         <!-- Stats/Manifesto Section -->
         <section class="manifesto-section">
@@ -162,77 +144,7 @@ import Footer from '../components/Footer.astro';
         font-weight: 300;
     }
 
-    /* Team Section */
-    .team-section {
-        margin-bottom: 8rem;
-    }
 
-    .section-title {
-        font-size: 0.9rem;
-        letter-spacing: 2px;
-        margin-bottom: 4rem;
-        opacity: 0.5;
-        text-align: center;
-    }
-
-    .team-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 4rem;
-    }
-
-    .team-grid.single-member {
-        grid-template-columns: 1fr;
-        max-width: 500px;
-        margin: 0 auto;
-    }
-
-    .team-member {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .member-image {
-        width: 100%;
-        height: 400px;
-        margin-bottom: 2rem;
-        overflow: hidden;
-    }
-
-    .member-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: grayscale(100%);
-        transition: transform 0.5s ease, filter 0.5s ease;
-    }
-
-    .team-member:hover .member-image img {
-        transform: scale(1.03);
-        filter: grayscale(0%);
-    }
-
-    .member-info h4 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-        letter-spacing: 1px;
-    }
-
-    .role {
-        display: block;
-        font-size: 0.75rem;
-        letter-spacing: 2px;
-        margin-bottom: 1.5rem;
-        opacity: 0.6;
-    }
-
-    .member-info p {
-        font-size: 0.95rem;
-        line-height: 1.6;
-        opacity: 0.8;
-        font-weight: 300;
-    }
 
     /* Manifesto */
     .manifesto-section {

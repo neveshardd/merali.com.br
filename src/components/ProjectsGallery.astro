@@ -1,18 +1,44 @@
 ---
-import { getProjects } from '../db/queries';
+import { getProjectsFromCRM } from '../lib/crm';
 
-const dbProjects = await getProjects();
-const featuredProjects = dbProjects.slice(0, 5).map((p, index) => {
+const dbProjects = await getProjectsFromCRM();
+
+// Filter featured projects or fallback to first 5, prioritizing featured
+let selectedProjects = dbProjects.filter(p => p.featured);
+
+// If no featured projects, take the most recent 5
+// Fallback removed: only show explicitly featured projects
+// if (selectedProjects.length === 0) {
+//     selectedProjects = dbProjects.slice(0, 5);
+// }
+
+// Map only selected projects for modal
+const modalProjects = selectedProjects.map((p, index) => {
     let images: string[] = [];
-    try {
-        images = JSON.parse(p.images || '[]');
-    } catch {
-        images = [p.images || ''];
-    }
+    try { images = JSON.parse(p.images || '[]'); } catch { images = [p.images || '']; }
+    return {
+        ...p,
+        image: images[0] || '/hero-render.png',
+        // default visual props if needed inside modal logic, 
+        // though modal mainly uses raw data.
+    };
+});
 
-    // Simple pattern for grid logic
-    const sizes = ['wide', 'tall', 'normal', 'normal', 'wide'];
-    const positions = ['center', 'left', 'right', 'top', 'bottom'];
+// Featured logic for display
+// Redundant declaration removed
+
+// Fallback removed per user request: if no featured projects, show none.
+// if (selectedProjects.length === 0) selectedProjects = dbProjects.slice(0, 5);
+
+const featuredProjects = selectedProjects.slice(0, 5).map((p, index) => {
+    // ... same visual mapping logic ...
+    let images: string[] = [];
+    try { images = JSON.parse(p.images || '[]'); } catch { images = [p.images || '']; }
+
+// Adjust sizes for 4-column grid. User requested vertical images in columns, horizontal ones 'small' (1x1).
+    // So fewer 'wide' items, mostly 'tall' or 'normal'.
+    const sizes = ['tall', 'normal', 'normal', 'tall', 'normal', 'normal', 'tall', 'normal'];
+    const positions = ['center', 'center', 'center', 'center', 'center', 'center', 'center', 'center']; // Simplify positions
     
     return {
         ...p,
@@ -21,24 +47,28 @@ const featuredProjects = dbProjects.slice(0, 5).map((p, index) => {
         position: positions[index % positions.length]
     };
 });
+import ProjectModal from './ProjectModal.astro';
 ---
 
 <section id="projetos" class="projects-section">
+    <ProjectModal projects={modalProjects} />
 	<div class="container">
 		<div class="section-header">
 			<h2 class="section-title">PROJETOS SELECIONADOS</h2>
 			<a href="/projetos" class="view-all">VER TODOS &rarr;</a>
 		</div>
 
-		<div class="gallery">
+		<div class={`gallery ${featuredProjects.length <= 2 ? 'few-items' : ''}`}>
             {featuredProjects.length > 0 ? featuredProjects.map((project) => (
-                <a href={`/projetos/${project.slug}`} class={`project-item ${project.size}`}>
+                <div class={`project-item ${project.size}`} onclick={`window.openProjectModal('${project.id}')`}>
                     <div class="image-wrapper">
-                        <img src={project.image} alt={project.title} style={`object-position: ${project.position};`} />
+                        <img src={project.image} alt={project.title} loading="lazy" />
                         <div class="overlay"></div>
-                        <span class="project-title">{project.title}</span>
+                        <div class="project-info">
+                            <h3 class="project-title">{project.title}</h3>
+                        </div>
                     </div>
-                </a>
+                </div>
             )) : (
                 <div class="empty-gallery">
                     <p>Portfólio em atualização.</p>
@@ -50,27 +80,28 @@ const featuredProjects = dbProjects.slice(0, 5).map((p, index) => {
 
 <style>
 	.projects-section {
-		padding: 8rem 4rem;
-		background-color: #13151a; /* Matching global bg */
+		padding: 6rem 2rem;
+		background-color: #13151a;
 		color: white;
 	}
 
 	.container {
-		max-width: 1100px;
+		max-width: 1400px;
 		margin: 0 auto;
+        padding: 0 1rem;
 	}
 
 	.section-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: flex-end;
-		margin-bottom: 3rem;
+		margin-bottom: 2rem;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 		padding-bottom: 1rem;
 	}
 
 	.section-title {
-		font-size: 1.5rem;
+		font-size: 1.25rem;
 		font-weight: 300;
 		letter-spacing: 2px;
 		margin: 0;
@@ -81,21 +112,26 @@ const featuredProjects = dbProjects.slice(0, 5).map((p, index) => {
 		letter-spacing: 1px;
 		opacity: 0.7;
 		transition: opacity 0.3s ease;
+		color: white;
+		text-decoration: none;
 	}
 
 	.view-all:hover {
 		opacity: 1;
-		text-decoration: underline;
 	}
 
-	/* Masonry/Grid Layout */
+	/* Grid Layout Simplificado e Robusto */
 	.gallery {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-		grid-auto-rows: 350px;
+		grid-template-columns: repeat(4, 1fr); /* 4 Colunas Fixas por padrão */
 		gap: 1.5rem;
-		grid-auto-flow: dense; /* Helps fill gaps */
+        align-items: start; /* Alinhar ao topo */
 	}
+
+    /* Ajuste dinâmico quando há poucos itens (ex: 2) */
+    .gallery.few-items {
+        grid-template-columns: repeat(2, 1fr);
+    }
 
     .empty-gallery {
         grid-column: 1 / -1;
@@ -105,49 +141,41 @@ const featuredProjects = dbProjects.slice(0, 5).map((p, index) => {
         min-height: 200px;
         border: 1px dashed rgba(255,255,255,0.1);
         color: rgba(255,255,255,0.5);
-        font-weight: 300;
-        letter-spacing: 1px;
     }
 
-	/* Aspect Ratio Helpers */
-	.project-item.wide {
-		grid-column: span 2;
-	}
-
-	.project-item.tall {
-		grid-row: span 2;
-	}
-
 	.project-item {
-		display: block; /* Link is block */
+        /* Forçar ocupação de apenas 1 coluna */
+        grid-column: span 1;
+        
+        display: block;
 		position: relative;
 		overflow: hidden;
 		cursor: pointer;
-		height: 100%;
-		width: 100%;
+        background: #222;
+        border-radius: 4px;
+        margin: 0;
 	}
 
 	.image-wrapper {
 		width: 100%;
-		height: 100%;
 		position: relative;
-		transition: transform 0.5s ease;
+		transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        font-size: 0;
+        line-height: 0;
 	}
 
 	.project-item:hover .image-wrapper {
-		transform: scale(1.02);
+		transform: scale(1.05);
 	}
 
 	.project-item img {
 		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transition: filter 0.3s ease;
-		filter: grayscale(20%);
+		height: auto;
+		display: block;
+		transition: transform 0.3s ease;
 	}
 
 	.project-item:hover img {
-		filter: grayscale(0%);
 	}
 
 	.overlay {
@@ -156,52 +184,82 @@ const featuredProjects = dbProjects.slice(0, 5).map((p, index) => {
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%);
-		opacity: 0.6;
-		transition: opacity 0.3s ease;
+		background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 50%);
+		opacity: 0;
+        transition: opacity 0.3s;
 	}
 
 	.project-item:hover .overlay {
-		opacity: 0.8;
+		opacity: 1;
+	}
+
+	.project-info {
+		position: absolute;
+		bottom: 1.5rem;
+		left: 1.5rem;
+		right: 1.5rem;
+		z-index: 2;
+		opacity: 0;
+		transform: translateY(10px);
+		transition: all 0.3s ease;
+        pointer-events: none;
 	}
 
 	.project-title {
-		position: absolute;
-		bottom: 1.5rem;
-		right: 1.5rem;
-		font-size: 0.75rem;
-		font-weight: 600;
-		letter-spacing: 1.5px;
+		font-size: 0.9rem;
+		font-weight: 500;
+		letter-spacing: 1px;
 		color: white;
 		text-transform: uppercase;
-		z-index: 2;
-		opacity: 0.9;
-		text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        margin: 0;
+        
+        /* Force line break */
+        display: block !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important; 
+        overflow-wrap: break-word !important;
+        
+        line-height: 1.3;
+        text-align: left;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 	}
+    
+    .project-item:hover .project-info {
+        opacity: 1;
+        transform: translateY(0);
+    }
 
 	/* Responsive Adjustments */
-	@media (max-width: 1024px) {
-		.projects-section {
-			padding: 4rem 2rem;
+    @media (max-width: 600px) {
+        .project-title {
+            font-size: 0.8rem; /* Smaller font on mobile to fit */
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+        }
+    }
+
+	@media (max-width: 1200px) {
+		.gallery {
+            grid-template-columns: repeat(3, 1fr);
 		}
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 900px) {
 		.gallery {
-			grid-template-columns: 1fr; /* Stack on mobile */
-			grid-auto-rows: 300px;
+            grid-template-columns: repeat(2, 1fr);
 		}
+	}
 
-		.project-item.wide, 
-		.project-item.tall {
-			grid-column: span 1;
-			grid-row: span 1;
-		}
-
-		.section-header {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 1rem;
+	@media (max-width: 600px) {
+		.gallery {
+			grid-template-columns: 1fr;
 		}
 	}
 </style>
+
+<!-- Removendo script Masonry JS temporariamente para garantir layout grid básico horizontal -->
+<!-- Se o usuário ainda quiser o encaixe vertical perfeito (sem buracos), podemos reativar o masonry.js ou usar CSS columns se a ordem não importar tanto -->
+<!-- Como ele reclamou de "uma embaixo da outra" e "preencher linha 1 depois linha 2", o Grid normal é o mais seguro agora. 
+     Se as imagens tiverem proporções muito diferentes, ficarão desalinhadas embaixo, mas corretas na linha. -->

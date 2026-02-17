@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import { getProjectBySlug } from '../../db/queries';
+import { getProjectBySlugFromCRM } from '../../lib/crm';
 
 // SSR Mode: No getStaticPaths needed
 const { slug } = Astro.params;
@@ -11,7 +11,7 @@ if (!slug) {
     return Astro.redirect('/404');
 }
 
-const project = await getProjectBySlug(slug);
+const project = await getProjectBySlugFromCRM(slug);
 
 if (!project) {
     return Astro.redirect('/404');

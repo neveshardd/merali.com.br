@@ -1,0 +1,395 @@
+---
+import type { FrontendProject } from '../lib/crm';
+
+interface Props {
+  projects: FrontendProject[];
+}
+
+const { projects } = Astro.props;
+---
+
+<div id="project-modal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-content">
+    <button class="close-btn" aria-label="Close modal">&times;</button>
+    
+    <button class="nav-btn prev-btn" aria-label="Previous Project">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    
+    <div class="project-details">
+      <div class="image-gallery">
+        <div class="current-image-container">
+            <img id="modal-image" src="" alt="Project Image" />
+            
+            <div class="image-nav">
+                <button class="img-nav-btn prev-img" style="display: none;">&lsaquo;</button>
+                <button class="img-nav-btn next-img" style="display: none;">&rsaquo;</button>
+            </div>
+            
+            <div class="image-dots"></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="nav-btn next-btn" aria-label="Next Project">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+</div>
+
+<script define:vars={{ projects }}>
+  let currentProjectIndex = 0;
+  let currentImageIndex = 0;
+  let projectImages = [];
+
+  const modal = document.getElementById('project-modal');
+  const modalImg = document.getElementById('modal-image');
+  const dotsContainer = document.querySelector('.image-dots');
+
+  // Open Modal logic exposed to window
+  window.openProjectModal = (projectId) => {
+    // Find index using string comparison to avoid type issues
+    const index = projects.findIndex(p => p.id === projectId);
+    if (index === -1) return;
+    
+    currentProjectIndex = index;
+    loadProject(currentProjectIndex);
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  };
+
+  function loadProject(index) {
+    const p = projects[index];
+    if (!p) return;
+
+    // Parse images
+    try {
+        projectImages = JSON.parse(p.images || '[]');
+    } catch {
+        projectImages = [p.images].flat().filter(Boolean);
+    }
+    // Fallback if empty
+    if (projectImages.length === 0 && p.image) projectImages = [p.image];
+    if (projectImages.length === 0) projectImages = ['/placeholder.png'];
+
+    currentImageIndex = 0;
+
+    // Load first image
+    updateImage();
+    updateDots();
+
+    // Setup image navigation visibility
+    const prevImgBtn = document.querySelector('.prev-img');
+    const nextImgBtn = document.querySelector('.next-img');
+    
+    if (projectImages.length > 1) {
+        prevImgBtn.style.display = 'block';
+        nextImgBtn.style.display = 'block';
+    } else {
+        prevImgBtn.style.display = 'none';
+        nextImgBtn.style.display = 'none';
+    }
+  }
+
+  function updateImage() {
+    modalImg.style.opacity = '0';
+    setTimeout(() => {
+        modalImg.src = projectImages[currentImageIndex];
+        modalImg.onload = () => { modalImg.style.opacity = '1'; };
+    }, 200);
+    updateDots();
+  }
+
+  function updateDots() {
+    dotsContainer.innerHTML = '';
+    if(projectImages.length <= 1) return;
+    
+    projectImages.forEach((_, idx) => {
+        const dot = document.createElement('span');
+        dot.classList.add('dot');
+        if (idx === currentImageIndex) dot.classList.add('active');
+        dot.onclick = (e) => {
+            e.stopPropagation();
+            currentImageIndex = idx;
+            updateImage();
+        };
+        dotsContainer.appendChild(dot);
+    });
+  }
+
+  // Project Navigation
+  document.querySelector('.next-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentProjectIndex = (currentProjectIndex + 1) % projects.length;
+    loadProject(currentProjectIndex);
+  });
+
+  document.querySelector('.prev-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentProjectIndex = (currentProjectIndex - 1 + projects.length) % projects.length;
+    loadProject(currentProjectIndex);
+  });
+
+  // Image Navigation
+  document.querySelector('.next-img').addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentImageIndex = (currentImageIndex + 1) % projectImages.length;
+    updateImage();
+  });
+
+  document.querySelector('.prev-img').addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentImageIndex = (currentImageIndex - 1 + projectImages.length) % projectImages.length;
+    updateImage();
+  });
+
+  // Close Logic
+  document.querySelector('.close-btn').addEventListener('click', () => {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+  });
+
+  // Keyboard support
+  document.addEventListener('keydown', (e) => {
+    if (!modal.classList.contains('active')) return;
+    
+    if (e.key === 'Escape') {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    if (e.key === 'ArrowRight') {
+        currentProjectIndex = (currentProjectIndex + 1) % projects.length;
+        loadProject(currentProjectIndex);
+    }
+    if (e.key === 'ArrowLeft') {
+        currentProjectIndex = (currentProjectIndex - 1 + projects.length) % projects.length;
+        loadProject(currentProjectIndex);
+    }
+  });
+</script>
+
+<style>
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(19, 21, 26, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s;
+    visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+  }
+
+  .modal-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Pass clicks to overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .project-details {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .image-gallery {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+  }
+
+  .current-image-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .current-image-container img {
+    max-width: 90vw;
+    max-height: 90vh; 
+    object-fit: contain;
+    transition: opacity 0.3s ease;
+    filter: drop-shadow(0 20px 50px rgba(0,0,0,0.5));
+    width: auto;
+    height: auto;
+    display: block;
+    margin: auto;
+  }
+
+  /* Navigation Styles */
+  .image-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  
+  .img-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    font-size: 2rem;
+    padding: 0;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: background 0.3s;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 5px;
+  }
+
+  .img-nav-btn:hover {
+    background: rgba(0,0,0,0.8);
+  }
+
+  .prev-img { left: 20px; }
+  .next-img { right: 20px; }
+
+  .image-dots {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  .dot.active {
+    background: white;
+    transform: scale(1.2);
+  }
+
+  /* Global Nav Buttons (Project Switchers) */
+  .nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    padding: 2rem;
+    transition: all 0.3s;
+    z-index: 1001;
+    pointer-events: auto;
+  }
+  
+  .nav-btn:hover {
+    color: white;
+    background: transparent;
+    transform: scale(1.1) translateY(-45%);
+  }
+  
+  .nav-btn svg {
+    width: 60px;
+    height: 60px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  }
+
+  .prev-btn { left: 0px; }
+  .next-btn { right: 0px; }
+
+  .close-btn {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    font-size: 3rem;
+    cursor: pointer;
+    transition: color 0.3s;
+    line-height: 1;
+    z-index: 2000;
+    pointer-events: auto;
+  }
+
+  .close-btn:hover {
+    color: white;
+  }
+
+  @media (max-width: 1024px) {
+    .current-image-container img {
+        max-width: 100vw;
+        max-height: 100vh;
+        filter: none;
+    }
+    
+    .nav-btn {
+        padding: 1rem;
+    }
+    .nav-btn svg {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .close-btn {
+        top: 20px;
+        right: 20px;
+        background: rgba(0,0,0,0.5);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        padding-bottom: 5px;
+    }
+  }
+</style>
