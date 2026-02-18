@@ -1,5 +1,4 @@
 
-// src/pages/api/images.ts
 import type { APIRoute } from 'astro';
 import { getProjectsFromCRM } from '../../lib/crm';
 
