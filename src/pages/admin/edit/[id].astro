@@ -1,11 +1,8 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import MediaPicker from '../../../components/MediaPicker.astro';
-import { getProjectById, updateProject } from '../../../db/queries';
-// sharp import removed to allow dynamic loading
-import fs from 'fs/promises';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { getProjectByIdFromCRM } from '../../../lib/crm';
+// CRM mode - Mutations disabled
 
 const cookie = Astro.cookies.get('auth_token');
 if (!cookie) {
@@ -15,7 +12,7 @@ if (!cookie) {
 const { id } = Astro.params;
 if (!id) return Astro.redirect('/admin');
 
-const project = await getProjectById(id);
+const project = await getProjectByIdFromCRM(id);
 
 if (!project) return Astro.redirect('/admin'); // Handle not found
 
@@ -36,122 +33,8 @@ const currentCover = currentImages.length > 0 ? currentImages[0] : null;
 const currentGallery = currentImages.length > 1 ? currentImages.slice(1) : [];
 
 if (Astro.request.method === "POST") {
-    try {
-        const formData = await Astro.request.formData();
-        const title = formData.get("title")?.toString() || "";
-        const slug = formData.get("slug")?.toString() || "";
-        const category = formData.get("category")?.toString() || "";
-        const year = formData.get("year")?.toString() || "";
-        const location = formData.get("location")?.toString() || "";
-        const area = formData.get("area")?.toString() || "";
-        const description = formData.get("description")?.toString() || "";
-        
-        // Check if images were selected from library
-        const coverLibrary = formData.get("new_cover_image_library")?.toString();
-        const galleryLibrary = formData.get("new_gallery_images_library")?.toString();
-        
-        // Handle New File Uploads
-        const newCoverFile = formData.get('new_cover_image') as File;
-        const newGalleryFiles = formData.getAll('new_gallery_images') as File[];
-        
-        // Process kept gallery images (from hidden input)
-        let keptGallery: string[] = [];
-        const keptImagesRaw = formData.get("kept_gallery_images")?.toString();
-        if (keptImagesRaw) {
-             try {
-                 keptGallery = JSON.parse(keptImagesRaw);
-             } catch {}
-        }
-        
-        // 1. Determine Cover Image
-        // If a new cover is uploaded, it becomes the first image.
-        // If not, we keep the old cover (if it exists) unless there was logic to delete it (which we don't really support, a project needs a cover).
-        // Let's assume: kept cover is implicit unless replaced.
-        
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-        try {
-            await fs.access(uploadDir);
-        } catch {
-            await fs.mkdir(uploadDir, { recursive: true });
-        }
-
-        const processFile = async (file: File) => {
-            if (file.size > 0 && file.type.startsWith('image/')) {
-                const buffer = Buffer.from(await file.arrayBuffer());
-                const filename = `${uuidv4()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-                const filepath = path.join(uploadDir, filename);
-                
-                try {
-                    const sharp = (await import('sharp')).default;
-                    await sharp(buffer)
-                        .resize(1920, 1080, { fit: 'inside', withoutEnlargement: true })
-                        .jpeg({ quality: 80 })
-                        .toFile(filepath);
-                } catch(err) {
-                    console.warn("Sharp optimization failed (or not found), saving raw file:", err);
-                    await fs.writeFile(filepath, buffer);
-                }
-                
-                return `/uploads/${filename}`;
-            }
-            return null;
-        }
-
-
-        let finalCover = currentCover;
-        
-        // Check if cover was selected from library
-        if (coverLibrary) {
-            try {
-                const libraryUrls = JSON.parse(coverLibrary);
-                if (Array.isArray(libraryUrls) && libraryUrls.length > 0) {
-                    finalCover = libraryUrls[0];
-                }
-            } catch {}
-        }
-        
-        // If no library selection, check if user uploaded a new cover
-        if (finalCover === currentCover && newCoverFile && newCoverFile.size > 0) {
-            const newUrl = await processFile(newCoverFile);
-            if (newUrl) finalCover = newUrl;
-        }
-
-        let finalGallery: string[] = [...keptGallery];
-        
-        // Check if gallery was selected from library
-        if (galleryLibrary) {
-            try {
-                const libraryGallery = JSON.parse(galleryLibrary);
-                if (Array.isArray(libraryGallery)) {
-                    finalGallery.push(...libraryGallery);
-                }
-            } catch {}
-        }
-        
-        // Process new uploaded gallery images
-        for (const file of newGalleryFiles) {
-            const url = await processFile(file);
-            if (url) finalGallery.push(url);
-        }
-        
-        const allImages = [finalCover, ...finalGallery].filter(img => img !== null) as string[];
-
-
-        await updateProject(id, {
-            title,
-            slug,
-            category,
-            year,
-            location,
-            area,
-            description,
-            images: JSON.stringify(allImages),
-        });
-
-        return Astro.redirect("/admin");
-    } catch (e) {
-        console.error("Error updating project:", e);
-    }
+    console.warn("Mutations are disabled in the frontend. Please use the CRM management panel.");
+    return Astro.redirect("/admin?error=read_only");
 }
 ---
 

@@ -1,11 +1,7 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import MediaPicker from '../../components/MediaPicker.astro';
-import { createProject } from '../../db/queries';
-import { v4 as uuidv4 } from 'uuid';
-// sharp import removed to allow dynamic loading
-import fs from 'fs/promises';
-import path from 'path';
+// CRM mode - Mutations disabled in frontend
 
 const cookie = Astro.cookies.get('auth_token');
 if (!cookie) {
@@ -13,113 +9,8 @@ if (!cookie) {
 }
 
 if (Astro.request.method === "POST") {
-    try {
-        const formData = await Astro.request.formData();
-        const title = formData.get("title")?.toString() || "";
-        const slug = formData.get("slug")?.toString() || title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-        const category = formData.get("category")?.toString() || "";
-        const year = formData.get("year")?.toString() || "";
-        const location = formData.get("location")?.toString() || "";
-        const area = formData.get("area")?.toString() || "";
-        const description = formData.get("description")?.toString() || "";
-        
-        // Check if images were selected from library
-        const coverLibrary = formData.get("cover_image_library")?.toString();
-        const galleryLibrary = formData.get("gallery_images_library")?.toString();
-        
-        // Handle File Uploads
-        const coverFile = formData.get('cover_image') as File;
-        const galleryFiles = formData.getAll('gallery_images') as File[];
-        
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-        try {
-            await fs.access(uploadDir);
-        } catch {
-            await fs.mkdir(uploadDir, { recursive: true });
-        }
-
-        // Helper to process and save file
-        const processFile = async (file: File) => {
-             if (file.size > 0 && file.type.startsWith('image/')) {
-                const buffer = Buffer.from(await file.arrayBuffer());
-                const filename = `${uuidv4()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-                const filepath = path.join(uploadDir, filename);
-                
-                try {
-                    const sharp = (await import('sharp')).default;
-                    await sharp(buffer)
-                        .resize(1920, 1080, { fit: 'inside', withoutEnlargement: true })
-                        .jpeg({ quality: 80 })
-                        .toFile(filepath);
-                } catch (err) {
-                    console.warn("Sharp optimization failed (or not found), saving raw file:", err);
-                    await fs.writeFile(filepath, buffer);
-                }
-
-                return `/uploads/${filename}`;
-            }
-            return null;
-        }
-
-        // 1. Process Cover Image (First in array)
-        let coverUrl = null;
-        
-        // Check if cover was selected from library
-        if (coverLibrary) {
-            try {
-                const libraryUrls = JSON.parse(coverLibrary);
-                if (Array.isArray(libraryUrls) && libraryUrls.length > 0) {
-                    coverUrl = libraryUrls[0];
-                }
-            } catch {}
-        }
-        
-        // If no library selection, process uploaded file
-        if (!coverUrl && coverFile) {
-            coverUrl = await processFile(coverFile);
-        }
-        
-        const imageUrls: string[] = [];
-        if (coverUrl) imageUrls.push(coverUrl);
-
-        // 2. Process Gallery Images
-        let galleryUrls: string[] = [];
-        
-        // Check if gallery was selected from library
-        if (galleryLibrary) {
-            try {
-                const libraryGallery = JSON.parse(galleryLibrary);
-                if (Array.isArray(libraryGallery)) {
-                    galleryUrls = libraryGallery;
-                }
-            } catch {}
-        }
-        
-        // Add uploaded gallery files
-        for (const file of galleryFiles) {
-            const url = await processFile(file);
-            if (url) galleryUrls.push(url);
-        }
-        
-        imageUrls.push(...galleryUrls);
-
-        await createProject({
-            id: uuidv4(),
-            title,
-            slug,
-            category,
-            year,
-            location,
-            area,
-            description,
-            images: JSON.stringify(imageUrls),
-            createdAt: new Date(),
-        });
-
-        return Astro.redirect("/admin");
-    } catch (e) {
-        console.error("Error creating project:", e);
-    }
+    console.warn("Mutations are disabled in the frontend. Please use the CRM management panel.");
+    return Astro.redirect("/admin?error=read_only");
 }
 ---
 

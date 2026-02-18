@@ -97,6 +97,11 @@ export async function getProjectsFromCRM(): Promise<FrontendProject[]> {
     }
 }
 
+export async function getProjectByIdFromCRM(id: string): Promise<FrontendProject | null> {
+    const projects = await getProjectsFromCRM();
+    return projects.find(p => p.id === id) || null;
+}
+
 export async function getProjectBySlugFromCRM(slug: string): Promise<FrontendProject | null> {
     const projects = await getProjectsFromCRM();
     return projects.find(p => p.slug === slug) || null;

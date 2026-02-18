@@ -1,16 +1,31 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { getAllImages, deleteImageFile } from '../../../db/media_queries';
-import { getProjects } from '../../../db/queries';
+import { getProjectsFromCRM } from '../../../lib/crm';
 
 const cookie = Astro.cookies.get('auth_token');
 if (!cookie) {
   return Astro.redirect('/admin/login');
 }
 
-// Data gathering
-const imagesRaw = await getAllImages();
-const projects = await getProjects();
+// Data gathering from CRM
+const projects = await getProjectsFromCRM();
+
+// Extract all images from CRM projects
+const imagesRaw: { url: string; filename: string; projectId?: string }[] = [];
+projects.forEach(p => {
+    try {
+        const imgs = JSON.parse(p.images || '[]');
+        if (Array.isArray(imgs)) {
+            imgs.forEach(url => {
+                imagesRaw.push({
+                    url,
+                    filename: url.split('/').pop() || 'image',
+                    projectId: p.id
+                });
+            });
+        }
+    } catch (e) {}
+});
 
 // Filtering Logic
 const filterProject = Astro.url.searchParams.get('project') || "all";
@@ -19,23 +34,16 @@ const showUnused = Astro.url.searchParams.get('unused') === 'true';
 let filteredImages = imagesRaw;
 
 if (showUnused) {
-    filteredImages = filteredImages.filter(img => !img.projectId);
+    // In CRM mode, we don't really have "unused" images easily without a full gallery API
+    filteredImages = []; 
 } else if (filterProject !== "all") {
     filteredImages = filteredImages.filter(img => img.projectId === filterProject);
 }
 
-// Handle Image Deletion
+// Handle Image Deletion (Disabled)
 if (Astro.request.method === "POST") {
-    const formData = await Astro.request.formData();
-    const action = formData.get('action');
-    
-    if (action === 'delete') {
-        const filename = formData.get('filename')?.toString();
-        if (filename) {
-            await deleteImageFile(filename);
-            return Astro.redirect(Astro.url.pathname + Astro.url.search);
-        }
-    }
+    console.warn("Delete disabled in frontend.");
+    return Astro.redirect(Astro.url.pathname + Astro.url.search);
 }
 ---
 

@@ -1,61 +1,20 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import ProjectForm from '../../components/ProjectForm.astro';
-import { getProjects, deleteProject, createProject, getProjectById, updateProject } from '../../db/queries';
-import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs/promises';
-import path from 'path';
+import { getProjectsFromCRM } from '../../lib/crm';
 
 const cookie = Astro.cookies.get('auth_token');
 if (!cookie) {
   return Astro.redirect('/admin/login');
 }
 
-// Handle POST actions (Create, Edit, Delete)
+// Handle POST actions (Disabled for now as mutations should happen in CRM)
 if (Astro.request.method === "POST") {
-    try {
-        const formData = await Astro.request.formData();
-        const action = formData.get("action");
-        const id = formData.get("id")?.toString();
-
-        if (action === "delete" && id) {
-            await deleteProject(id);
-        } else if (action === "create") {
-            const title = formData.get("title")?.toString() || "";
-            const slug = formData.get("slug")?.toString() || title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-            
-            // Minimal file handling for now to avoid complexity in this step
-            // In a real scenario, we'd use processFile logic
-            
-            await createProject({
-                id: uuidv4(),
-                title,
-                slug,
-                category: formData.get("category")?.toString() || "",
-                year: formData.get("year")?.toString() || "",
-                location: formData.get("location")?.toString() || "",
-                area: formData.get("area")?.toString() || "",
-                description: formData.get("description")?.toString() || "",
-                images: JSON.stringify([]),
-                createdAt: new Date(),
-            });
-        } else if (action === "edit" && id) {
-             await updateProject(id, {
-                title: formData.get("title")?.toString() || "",
-                category: formData.get("category")?.toString() || "",
-                year: formData.get("year")?.toString() || "",
-                location: formData.get("location")?.toString() || "",
-                area: formData.get("area")?.toString() || "",
-                description: formData.get("description")?.toString() || "",
-            });
-        }
-        return Astro.redirect("/admin");
-    } catch (e) {
-        console.error("Action error:", e);
-    }
+    console.warn("Mutations are disabled in the frontend. Please use the CRM management panel.");
+    return Astro.redirect("/admin?error=read_only");
 }
 
-const projects = await getProjects();
+const projects = await getProjectsFromCRM();
 ---
 
 <AdminLayout title="Projetos">
